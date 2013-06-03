@@ -1,0 +1,10 @@
+Dibuat dengan VS2012
+
+Ada empat file obj dan material file: sayap* dan kepala*, tolong jangan dihapus. Jika dihapus program tidak jalan
+
+Dibuat oleh:
+
+1006671425 Fajar Setyo
+1006671766 Muhammad Mufid
+
+Menggunakkan kepustakaan GLm

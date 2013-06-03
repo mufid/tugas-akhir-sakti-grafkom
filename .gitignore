@@ -1,4 +1,5 @@
 Debug/*
 Tes/Debug/*
 *.sdf
+*.suo
 *.opensdf

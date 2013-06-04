@@ -140,6 +140,7 @@ bool isSpin = true; // Apakah model perlu berputar?
 // Objek untuk DisplayList
 GLuint sayap_dp;
 GLuint kepala_dp;
+GLuint kaktus_dp;
 
 GLuint shadowMapTexture;
 const int shadowMapSize = 512;
@@ -667,7 +668,15 @@ void DrawScene(void) {
 	    glScalef(1.0f, 0.05f, 1.0f);
 	    glutSolidCube(30.f);
         glPopMatrix();
+
+        // Gambar kaktus yey
+        glPushMatrix();
+            glTranslatef(4.f, 0, 0);
+            glCallList(kaktus_dp);
+        glPopMatrix();
+
 	glDisable(GL_LIGHTING);
+
 }
 
 // Display Function
@@ -795,14 +804,26 @@ void mouseClick(int btn, int state, int x, int y) {
 void initDisplayList()
 {
     GLMmodel* sayap;
+    GLMmodel* kaktus;
     sayap = (GLMmodel*)malloc(sizeof(GLMmodel));
 	sayap = glmReadOBJ("sayap.obj");
 	
 	sayap_dp=glGenLists(1);
 	glNewList(sayap_dp,GL_COMPILE);
-		//glmList(f16, GLM_SMOOTH);
-		glmDraw(sayap, GLM_SMOOTH);
+		glmList(sayap, GLM_SMOOTH);
+		//glmDraw(sayap, GLM_SMOOTH);
 	glEndList();
+
+    kaktus = (GLMmodel*)malloc(sizeof(GLMmodel));
+	kaktus = glmReadOBJ("kaktus.obj");
+	
+	kaktus_dp=glGenLists(1);
+	glNewList(kaktus_dp,GL_COMPILE);
+        glmList(kaktus, GLM_SMOOTH);
+		//glmList(f16, GLM_SMOOTH);
+		//glmDraw(kaktus, GLM_SMOOTH);
+	glEndList();
+
 
 }
 

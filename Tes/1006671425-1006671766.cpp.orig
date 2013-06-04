@@ -138,7 +138,14 @@ double jointInc = 10;
 GLfloat rot = 0.0, rotInc = 0.12; // Derajat perputaran model
 bool isSpin = true; // Apakah model perlu berputar?
 
+<<<<<<< HEAD
+// Objek untuk DisplayList
+GLuint sayap_dp;
+GLuint kepala_dp;
 GLuint kaktus_dp;
+
+=======
+>>>>>>> origin/maste-dev
 GLuint shadowMapTexture;
 const int shadowMapSize = 512;
 
@@ -892,6 +899,7 @@ void mouseClick(int btn, int state, int x, int y) {
 	}
 }
 
+<<<<<<< HEAD
 // DisplayList dipergunakan untuk menggambar sayap yang cukup kompleks
 void initDisplayList()
 {
@@ -912,6 +920,7 @@ void initDisplayList()
 	kaktus_dp=glGenLists(1);
 	glNewList(kaktus_dp,GL_COMPILE);
         glmList(kaktus, GLM_SMOOTH);
+		//glmList(f16, GLM_SMOOTH);
 		//glmDraw(kaktus, GLM_SMOOTH);
 	glEndList();
 
@@ -919,6 +928,8 @@ void initDisplayList()
 }
 
 
+=======
+>>>>>>> origin/maste-dev
 // Main Function
 int main(int argc, char **argv) {
     glutInit(&argc, argv);
@@ -933,8 +944,6 @@ int main(int argc, char **argv) {
 	glutMouseFunc(mouseClick);
 	glutIdleFunc(animation);
 	
-    initDisplayList();
-
     int animateInt, horizonInt, verticInt, materialInt, spinInt;
 	animateInt = glutCreateMenu(animateMenu);
     glutAddMenuEntry("neck", 0);

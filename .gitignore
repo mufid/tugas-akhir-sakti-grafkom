@@ -3,3 +3,4 @@ Tes/Debug/*
 *.sdf
 *.suo
 *.opensdf
+*.ipch

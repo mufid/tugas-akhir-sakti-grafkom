@@ -41,6 +41,7 @@ using namespace std;
 #define CALF_LOWER 0.6
 #define CALF_HEIGHT 4.2
 
+#define MAX_WING 0.6
 
 #define CHEST_UPPER 1.7
 #define CHEST_LOWER 2.2
@@ -126,7 +127,7 @@ gluDisk(QUAD, 0.0f, TOP, SLICES, 1); \
 glTranslatef(0.0f, 0.0f, -HEIGHT); 
 
 bool isPlay = false; // Apakah animasi bermain?
-bool isHorizon = false, isVertic = false; // Apakah lampu menyala?
+bool isHorizon = true, isVertic = false; // Apakah lampu menyala?
 
 double lightDegree = 0, lightInc = 0.05; // Derajat Lampu
 
@@ -134,12 +135,8 @@ int lockedPart = 0; // Index joint yang sedang aktif
 double jointDegree[9] = {20, 0, 0, 0, 0, 0, 0, 0, 0}; // Derajat tiap joint
 double jointInc = 10;
 
-GLfloat rot = 0.0, rotInc = 0.05; // Derajat perputaran model
+GLfloat rot = 0.0, rotInc = 0.12; // Derajat perputaran model
 bool isSpin = true; // Apakah model perlu berputar?
-
-// Objek untuk DisplayList
-GLuint sayap_dp;
-GLuint kepala_dp;
 
 GLuint shadowMapTexture;
 const int shadowMapSize = 512;
@@ -198,70 +195,74 @@ void init() {
 // Buat kepala dari ini semua
 void DrawKepala()
 {
-    glTranslatef(.0f, .0f, 2.0f);
     glPushMatrix();
-   
-    glBegin(GL_QUADS);                
-       // y = 1 kepala atas
-       glVertex3f( 1.0f, 1.0f, -1.0f);
-       glVertex3f(-1.0f, 1.0f, -1.0f);
-       glVertex3f(-1.0f, 1.0f,  1.0f);
-       glVertex3f( 1.0f, 1.0f,  1.0f);
- 
-       // y = -1 kepala bawah
-       glVertex3f( 1.0f, -1.0f,  1.0f);
-       glVertex3f(-1.0f, -1.0f,  1.0f);
-       glVertex3f(-1.0f, -1.0f, -1.0f);
-       glVertex3f( 1.0f, -1.0f, -1.0f);
- 
-       // z = 1 kepala depan
-       glVertex3f( 1.0f,  1.0f, 1.0f);
-       glVertex3f(-1.0f,  1.0f, 1.0f);
-       glVertex3f(-1.0f, -1.0f, 1.0f);
-       glVertex3f( 1.0f, -1.0f, 1.0f);
- 
-       // z = -1 kepala belakang
-       glVertex3f( 1.0f, -1.0f, -1.0f);
-       glVertex3f(-1.0f, -1.0f, -1.0f);
-       glVertex3f(-1.0f,  1.0f, -1.0f);
-       glVertex3f( 1.0f,  1.0f, -1.0f);
- 
-       // x = -1 kepala kiri (define your kiri)
-       glVertex3f(-1.0f,  1.0f,  1.0f);
-       glVertex3f(-1.0f,  1.0f, -1.0f);
-       glVertex3f(-1.0f, -1.0f, -1.0f);
-       glVertex3f(-1.0f, -1.0f,  1.0f);
- 
-       // x = 1 kepala kanan
-       glVertex3f(1.0f,  1.0f, -1.0f);
-       glVertex3f(1.0f,  1.0f,  1.0f);
-       glVertex3f(1.0f, -1.0f,  1.0f);
-       glVertex3f(1.0f, -1.0f, -1.0f);
-    glEnd(); 
-
-    // buat nilai awal untuk tanduk
-    GLfloat tandukX = .7f, tandukY = .0f, tandukZ = .1f;
-
-    // Gambar tanduknya, tanduk kiri
-    glPushMatrix();
-    glTranslatef(tandukX, tandukY, tandukZ);
-    glRotatef(90.f, 0, 1.f, 0);
-    glRotatef(-37.f, 1.f, 0, 0);
-    glutSolidCone(.3f, 2.7f, 10, 20);
-    glPopMatrix();
-
-    // dan ini tanduk kanan
-    glPushMatrix();
-    glTranslatef(-tandukX, tandukY, tandukZ);
-    glRotatef(-90.f, 0, 1.f, 0);
-    glRotatef(-37.f, 1.f, 0, 0);
-    glutSolidCone(.3f, 2.7f, 10, 20);
-    glPopMatrix();
-
-    glPopMatrix(); // jangan lupa untuk push matrix sebelumnya
+	glTranslatef(0, -3.7, 1);
+	glTranslatef(0, 3.5, 3);
+	glRotatef(-30, 1.0, 0.0, 0.0);
+	glRotatef(-30, 0.0, 0.0, -1.0);
+	glRotatef(-130, 1.0, 0.0, 0.0);
+	SOLID_CLOSED_CYLINDER(neck, 0.4, MAX_WING, 7.0, 10, 10);
+	glRotatef(130, 1.0, 0.0, 0.0);
+	glRotatef(30, 0.0, 0.0, -1.0);   
+	glRotatef(-30, 0.0, 0.0, 1.0);
+	glRotatef(-130, 1.0, 0.0, 0.0);
+	SOLID_CLOSED_CYLINDER(neck, 0.4, MAX_WING, 7.0, 10, 10);
+	glRotatef(130, 1.0, 0.0, 0.0);
+	glRotatef(30, 0.0, 0.0, 1.0);
+	glRotatef(30, 1.0, 0.0, 0.0);
+	glPushMatrix();
+	for(int ii = 0; ii < 3; ++ii) {
+		glRotatef(-10, 1.0, 0.0, 0.0);
+		glTranslatef(0, 0.5, -1);
+		glRotatef(-30, 1.0, 0.0, 0.0);
+		glRotatef(-30, 0.0, 0.0, -1.0);
+		glRotatef(-130, 1.0, 0.0, 0.0);
+		SOLID_CLOSED_CYLINDER(neck, 0.4, MAX_WING, 5.0, 10, 10);
+		glRotatef(130, 1.0, 0.0, 0.0);
+		glRotatef(30, 0.0, 0.0, -1.0);   
+		glRotatef(-30, 0.0, 0.0, 1.0);
+		glRotatef(-130, 1.0, 0.0, 0.0);
+		SOLID_CLOSED_CYLINDER(neck, 0.4, MAX_WING, 5.0, 10, 10);
+		glRotatef(130, 1.0, 0.0, 0.0);
+		glRotatef(30, 0.0, 0.0, 1.0);
+		glRotatef(30, 1.0, 0.0, 0.0);
+	}
+	glTranslatef(0, -2, 4);
+	glPopMatrix();
+	glTranslatef(0, -2.5, -2);
+	//low
+	glRotatef(-30, 0.0, 0.0, -1.0);
+	glRotatef(-130, 1.0, 0.0, 0.0);
+	SOLID_CLOSED_CYLINDER(neck, 0.3, 0.5, 5.0, 10, 10);
+	glRotatef(130, 1.0, 0.0, 0.0);
+	glRotatef(30, 0.0, 0.0, -1.0);   
+	glRotatef(-30, 0.0, 0.0, 1.0);
+	glRotatef(-130, 1.0, 0.0, 0.0);
+	SOLID_CLOSED_CYLINDER(neck, 0.3, 0.5, 5.0, 10, 10);
+	glRotatef(130, 1.0, 0.0, 0.0);
+	glRotatef(30, 0.0, 0.0, 1.0);
+	glPushMatrix();
+	for(int ii = 0; ii < 3; ++ii) {
+		glRotatef(-5, 1.0, 0.0, 0.0);
+		glTranslatef(0, 0.5, -0.5);
+		glRotatef(-30, 0.0, 0.0, -1.0);
+		glRotatef(-130, 1.0, 0.0, 0.0);
+		SOLID_CLOSED_CYLINDER(neck, 0.3, 0.5, 4.0, 10, 10);
+		glRotatef(130, 1.0, 0.0, 0.0);
+		glRotatef(30, 0.0, 0.0, -1.0);   
+		glRotatef(-30, 0.0, 0.0, 1.0);
+		glRotatef(-130, 1.0, 0.0, 0.0);
+		SOLID_CLOSED_CYLINDER(neck, 0.3, 0.5, 4.0, 10, 10);
+		glRotatef(130, 1.0, 0.0, 0.0);
+		glRotatef(30, 0.0, 0.0, 1.0);
+	}
+	glPopMatrix();
+    glPopMatrix(); 
 }
+
 GLuint windowWidth;
 GLuint windowHeight;
+
 // Reshape Function
 void reshape(int w, int h) {
     windowWidth = w;
@@ -279,11 +280,19 @@ void reshape(int w, int h) {
 
 void DrawLArm() {
 	glPushMatrix();
-	glTranslatef(-0.2, 0.7 - BICEPT_HEIGHT, BICEPT_HEIGHT - 1.9);
+	glTranslatef(-0.2, 0.7 - BICEPT_HEIGHT, BICEPT_HEIGHT - 2.7);
 	glRotatef(jointDegree[4], 1.0, 0.0, 0.0);
 	glRotatef(0, 0.0, 1.0, 0.0);
-	gluCylinder(lArm, ARM_LOWER, ARM_UPPER, ARM_HEIGHT, 10, 10);
+	SOLID_CLOSED_CYLINDER(lArm, ARM_LOWER, ARM_UPPER, ARM_HEIGHT, 10, 10);
 	glRotatef(0, 0.0, 1.0, 0.0);
+	glTranslatef(0.5, 0, 5);
+	glRotatef(-50, 1.0, 0.0, 0.0);
+	for(int ii = 0; ii < 3; ++ii) {
+		glRotatef(-130, 1.0, 0.0, 0.0);
+		SOLID_CLOSED_CYLINDER(neck, 0.01, MAX_WING, 3.0, 10, 10);
+		glRotatef(130, 1.0, 0.0, 0.0);
+		glTranslatef(-0.5, 0, .0);
+	}
 	glPopMatrix();
 }
 
@@ -307,11 +316,19 @@ void DrawLShoulder() {
 
 void DrawRArm() {
 	glPushMatrix();
-	glTranslatef(0.2, 0.7 - BICEPT_HEIGHT, BICEPT_HEIGHT - 1.9);
+	glTranslatef(0.2, 0.7 - BICEPT_HEIGHT, BICEPT_HEIGHT - 2.7);
 	glRotatef(jointDegree[3], 1.0, 0.0, 0.0);
 	glRotatef(0, 0.0, 1.0, 0.0);
 	SOLID_CLOSED_CYLINDER(rArm, ARM_LOWER, ARM_UPPER, ARM_HEIGHT, 10, 10);
 	glRotatef(0, 0.0, 1.0, 0.0);
+	glTranslatef(0.5, 0, 5);
+	glRotatef(-50, 1.0, 0.0, 0.0);
+	for(int ii = 0; ii < 3; ++ii) {
+		glRotatef(-130, 1.0, 0.0, 0.0);
+		SOLID_CLOSED_CYLINDER(neck, 0.01, MAX_WING, 3.0, 10, 10);
+		glRotatef(130, 1.0, 0.0, 0.0);
+		glTranslatef(-0.5, 0, .0);
+	}
 	glPopMatrix();
 }
 
@@ -321,13 +338,13 @@ void DrawRShoulder() {
 	glRotatef(jointDegree[1], 1.0, 0.0, 0.0);
 	glRotatef(-90, 0.0, 1.0, 0.0);
 	glRotatef(-30, 1.0, 0.0, 0.0);
-	gluCylinder(rShoulder, SHOULDER_LOWER, SHOULDER_UPPER, SHOULDER_HEIGHT, 10, 10);
+	SOLID_CLOSED_CYLINDER(rShoulder, SHOULDER_LOWER, SHOULDER_UPPER, SHOULDER_HEIGHT, 10, 10);
 	glRotatef(30, 1.0, 0.0, 0.0);
 	glRotatef(90, 0.0, 1.0, 0.0);
 	
 	glTranslatef(-SHOULDER_HEIGHT/7, 0.0, 0.0);
 	glRotatef(60, 1.0, 0.0, 0.0);
-	gluCylinder(rShoulder, BICEPT_UPPER, BICEPT_LOWER, BICEPT_HEIGHT, 10, 10);
+	SOLID_CLOSED_CYLINDER(rShoulder, BICEPT_UPPER, BICEPT_LOWER, BICEPT_HEIGHT, 10, 10);
 	glRotatef(-60, 1.0, 0.0, 0.0);
 	DrawRArm();	
 	glPopMatrix();
@@ -346,14 +363,10 @@ void DrawNeck() {
 	glRotatef(10, 1.0, 0.0, 0.0);
 	glTranslatef(0.0, 0.2, 0.9);
 	glRotatef(0, 1.0, 0.0, 0.0);
-	SOLID_CLOSED_CYLINDER(neck, NECK_LOWER, NECK_UPPER, NECK_HEIGHT, 10, 10);
 	glRotatef(0, 1.0, 0.0, 0.0);
 	glTranslatef(0.0, 0.0, 0.9);
 	glRotatef(0, 1.0, 0.0, 0.0);
-	SOLID_CLOSED_CYLINDER(neck, NECK_LOWER, NECK_UPPER, NECK_HEIGHT, 10, 10);
 	glRotatef(0, 1.0, 0.0, 0.0);
-    // Setelah leher semuanya digambar, barulah kita
-    // gambar kepalanya
     DrawKepala();
 	glPopMatrix();
 }
@@ -368,10 +381,16 @@ void DrawLFeet() {
 	glTranslatef(0.0, -3.3, -2.7);
 	glRotatef(30.0, 1.0, 0.0, 0.0);
 	glScalef(FEET_WIDTH, FEET_HEIGHT, FEET_LENGTH);
-	glutSolidCube(1.0);
 	glScalef(1.0/FEET_WIDTH, 1.0/FEET_HEIGHT, 1.0/FEET_LENGTH);
 	glRotatef(30.0, -1.0, 0.0, 0.0);
-	glTranslatef(0.0, 0.0, 1.0);	
+	glTranslatef(0.0, 0.0, 1.0);
+	glTranslatef(0.5, -1.85, 0.8);
+	for(int ii = 0; ii < 3; ++ii) {
+		glRotatef(-130, 1.0, 0.0, 0.0);
+		SOLID_CLOSED_CYLINDER(neck, 0.01, MAX_WING, 3.0, 10, 10);
+		glRotatef(130, 1.0, 0.0, 0.0);
+		glTranslatef(-0.5, 0, .0);
+	}
 	glPopMatrix();
 }
 
@@ -386,10 +405,16 @@ void DrawRFeet() {
 	glTranslatef(0.0, -3.3, -2.7);
 	glRotatef(30.0, 1.0, 0.0, 0.0);
 	glScalef(FEET_WIDTH, FEET_HEIGHT, FEET_LENGTH);
-	glutSolidCube(1.0);
 	glScalef(1.0/FEET_WIDTH, 1.0/FEET_HEIGHT, 1.0/FEET_LENGTH);
 	glRotatef(30.0, -1.0, 0.0, 0.0);
-	glTranslatef(0.0, 0.0, 1.0);	
+	glTranslatef(0.0, 0.0, 1.0);
+	glTranslatef(0.5, -1.85, 0.8);
+	for(int ii = 0; ii < 3; ++ii) {
+		glRotatef(-130, 1.0, 0.0, 0.0);
+		SOLID_CLOSED_CYLINDER(neck, 0.01, MAX_WING, 3.0, 10, 10);
+		glRotatef(130, 1.0, 0.0, 0.0);
+		glTranslatef(-0.5, 0, .0);
+	}	
 	glPopMatrix();
 }
 
@@ -405,75 +430,6 @@ void DrawLLeg() {
 	glRotatef(40, 1.0, 1.0, 0.0);
 	DrawLFeet();
 	glPopMatrix();
-}
-
-void doDrawSayap()
-{
-    // Generic bikin sayap, buat sayap kiri bisa
-    // sayap kanan juga bisa
-    // Digambar dengan basis 2D karena ini merupakan plane
-   glBegin(GL_POLYGON);
-   {
-      glVertex3f(0.0f, 0.0f, 0.0f);
-      glVertex3f(0.0f, 1.0f, 0.0f);
-      glVertex3f(.15f, .3f, 0.0f);
-      glVertex3f(.3f, 1.f, 0.0f);
-      glVertex3f(.45f, .3f, 0.0f);
-      glVertex3f(.6f, 1.f, 0.0f);
-      glVertex3f(.6f, 0.f, 0.0f);
-   }
-   glEnd();   // Selesai gambar sayap   
-
-}
-
-void DrawSayap()
-{
-    // Nilai inisial untuk sayap
-    GLfloat dasarX, dasarY, dasarZ;
-    dasarX = 2.25f;
-    dasarY = -1.f;
-    dasarZ = -3.5f;
-
-    // Sayap? Gambar saja dengan hasil export-an Blender!
-    glPushMatrix();
-    glTranslatef(dasarX, dasarY, dasarZ);
-    glRotatef(-90.f, 0.f, 0.f, -1.f);
-    glRotatef(-35.f, 1.f, 0.f, 0.f);
-    //glRotatef(-90.f, 1.f, 0.f, 0.f);
-    glCallList(sayap_dp);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(-dasarX, dasarY, dasarZ);
-    glRotatef(-90.f, 0.f, 0.f, -1.f);
-    glRotatef(35.f, 1.f, 0.f, 0.f);
-    //glRotatef(-90.f, 1.f, 0.f, 0.f);
-    glCallList(sayap_dp);
-    glPopMatrix();
-
-    return;
-    
-    // simpan dulu state matriks saat ini
-    // siapkan untuk penggambaran inisial
-    glPushMatrix();
-    glTranslatef(dasarX, dasarY, dasarZ);
-    glScalef(4.0f, 4.0f, 4.0f);
-    glRotatef(90.f, 0.f, 0.f, 1.f);
-    glRotatef(-90.f, 1.f, 0.f, 0.f);
-    // Gambar sayap kiri
-    doDrawSayap();
-    glPopMatrix();
-
-    // Nah yang sekarang gambar sayap yang kanan
-    glPushMatrix();
-    glTranslatef(-dasarX, dasarY, dasarZ);
-    glScalef(4.0f, 4.0f, 4.0f);
-    glRotatef(90.f, 0.f, 0.f, 1.f);
-    glRotatef(-90.f, 1.f, 0.f, 0.f);
-    // Gambar sayap kanan
-    doDrawSayap();
-    glPopMatrix();
-
 }
 
 void DrawRLeg() {
@@ -497,34 +453,35 @@ void DrawTail() {
 	glRotatef(200, 1.0, 0.0, 0.0);
 	glTranslatef(0.0, STOMACH_HEIGHT - 1.4, 0);
 	glRotatef(-70, 1.0, 0.0, 0.0);
-	gluCylinder(neck, NECK_LOWER, NECK_UPPER, NECK_HEIGHT, 10, 10);
+	SOLID_CLOSED_CYLINDER(neck, NECK_LOWER, NECK_UPPER, NECK_HEIGHT, 10, 10);
 	glRotatef(70, 1.0, 0.0, 0.0);
 	glTranslatef(0.0, 0.5, 0.5);
 	glRotatef(-55, 1.0, 0.0, 0.0);
-	gluCylinder(neck, NECK_LOWER, NECK_UPPER, NECK_HEIGHT, 10, 10);
+	SOLID_CLOSED_CYLINDER(neck, NECK_LOWER-0.1, NECK_UPPER, NECK_HEIGHT, 10, 10);
 	glRotatef(55, 1.0, 0.0, 0.0);
 	glTranslatef(0.0, 0.6, 0.6);
 	glRotatef(-40, 1.0, 0.0, 0.0);
-	gluCylinder(neck, NECK_LOWER, NECK_UPPER, NECK_HEIGHT, 10, 10);
+	SOLID_CLOSED_CYLINDER(neck, NECK_LOWER-0.2, NECK_UPPER, NECK_HEIGHT, 10, 10);
 	glRotatef(40, 1.0, 0.0, 0.0);
 	glTranslatef(0.0, 0.6, 0.8);
 	glRotatef(-25, 1.0, 0.0, 0.0);
-	gluCylinder(neck, NECK_LOWER, NECK_UPPER, NECK_HEIGHT, 10, 10);
+	SOLID_CLOSED_CYLINDER(neck, NECK_LOWER-0.3, NECK_UPPER, NECK_HEIGHT, 10, 10);
 	glRotatef(25, 1.0, 0.0, 0.0);
 	glTranslatef(0.0, 0.4, 0.9);
 	glRotatef(-10, 1.0, 0.0, 0.0);
-	gluCylinder(neck, NECK_LOWER, NECK_UPPER, NECK_HEIGHT, 10, 10);
+	SOLID_CLOSED_CYLINDER(neck, NECK_LOWER-0.4, NECK_UPPER, NECK_HEIGHT, 10, 10);
 	glRotatef(10, 1.0, 0.0, 0.0);
 	glTranslatef(0.0, 0.2, 0.9);
 	glRotatef(0, 1.0, 0.0, 0.0);
-	gluCylinder(neck, NECK_LOWER, NECK_UPPER, NECK_HEIGHT, 10, 10);
+	SOLID_CLOSED_CYLINDER(neck, NECK_LOWER-0.5, NECK_UPPER, NECK_HEIGHT, 10, 10);
+	glRotatef(0, 1.0, 0.0, 0.0);
+	glTranslatef(0.0, 0.0, 0.9);	
+	glRotatef(10, 1.0, 0.0, 0.0);
+	glRotatef(0, 1.0, 0.0, 0.0);
+	SOLID_CLOSED_CYLINDER(neck, NECK_LOWER-0.6, NECK_UPPER, NECK_HEIGHT, 10, 10);
 	glRotatef(0, 1.0, 0.0, 0.0);
 	glTranslatef(0.0, 0.0, 0.9);
-	glRotatef(0, 1.0, 0.0, 0.0);
-	gluCylinder(neck, NECK_LOWER, NECK_UPPER, NECK_HEIGHT, 10, 10);
-	glRotatef(0, 1.0, 0.0, 0.0);
-	glTranslatef(0.0, 0.0, 0.9);
-	gluCylinder(neck, NECK_LOWER, 0.01, NECK_HEIGHT*4, 10, 10);
+	SOLID_CLOSED_CYLINDER(neck, NECK_UPPER, 0.01, NECK_HEIGHT*4, 10, 10);
 	glPopMatrix();
 }
 
@@ -533,9 +490,146 @@ void DrawLeftWing() {
 	glTranslatef(1.0, STOMACH_HEIGHT, 0);
 	glRotatef(-30, 0.0, 0.0, 1.0);
 	glRotatef(-130, 1.0, 0.0, 0.0);
-	gluCylinder(neck, 0.4, 0.4, 5.0, 10, 10);
+	SOLID_CLOSED_CYLINDER(neck, 0.4, MAX_WING, 5.0, 10, 10);
 	glRotatef(130, 1.0, 0.0, 0.0);
 	glRotatef(30, 0.0, 0.0, 1.0);
+	glTranslatef(1.7, 3, -2.7);
+	glRotatef(40, 0.0, 0.0, 1.0);
+	glRotatef(110, 0.0, 1.0, 0.0);
+	SOLID_CLOSED_CYLINDER(neck, 0.4, MAX_WING, 4.0, 10, 10);
+	glRotatef(-110, 0.0, 1.0, 0.0);
+	glRotatef(-40, 0.0, 0.0, 1.0);
+	glTranslatef(2.7, 2.2, -1.2);
+	//1
+	glRotatef(-60, 0.0, 0.0, 1.0);
+	glRotatef(90, 0.0, 1.0, 0.0);
+	SOLID_CLOSED_CYLINDER(neck, 0.3, MAX_WING, 4.0, 10, 10);
+	glRotatef(-90, 0.0, 1.0, 0.0);
+	glRotatef(60, 0.0, 0.0, 1.0);
+	glTranslatef(1.9, -2.8, -0.2);
+	glRotatef(80, 1.0, 0.0, 0.0);
+	SOLID_CLOSED_CYLINDER(neck, MAX_WING, 0.01, 4.0, 10, 10);
+	glRotatef(-80, 1.0, 0.0, 0.0);
+	glTranslatef(-1.9, 2.8, 0.2);
+	//end
+	glRotatef(50, 0.0, 0.0, 1.0);
+	glRotatef(60, 0.0, 1.0, 0.0);
+	SOLID_CLOSED_CYLINDER(neck, 0.4, MAX_WING, 4.0, 10, 10);
+	glRotatef(-60, 0.0, 1.0, 0.0);
+	glTranslatef(3.2, 0.5, 1.7);
+	//2
+	glRotatef(-30, 0.0, 0.0, 1.0);
+	glRotatef(-60, 0.0, 0.0, 1.0);
+	glRotatef(90, 0.0, 1.0, 0.0);
+	SOLID_CLOSED_CYLINDER(neck, 0.3, MAX_WING, 7.0, 10, 10);
+	glRotatef(-90, 0.0, 1.0, 0.0);
+	glRotatef(60, 0.0, 0.0, 1.0);
+	glTranslatef(3.5, -5, -0.2);
+	glRotatef(-20, 0.0, 0.0, 1.0);
+	glRotatef(80, 1.0, 0.0, 0.0);
+	SOLID_CLOSED_CYLINDER(neck, MAX_WING, 0.01, 8.0, 10, 10);
+	glRotatef(-80, 1.0, 0.0, 0.0);
+	glRotatef(20, 0.0, 0.0, 1.0);
+	glTranslatef(-3.5, 5, 0.2);
+	glRotatef(30, 0.0, 0.0, 1.0);
+	glRotatef(-50, 0.0, 0.0, 1.0);
+	//end
+	glTranslatef(0.5, -0.5, 0);
+	glRotatef(60, 0.0, 0.0, 1.0);
+	glTranslatef(0.5, 0, 0);
+	glRotatef(30, 0.0, 1.0, 0.0);
+	SOLID_CLOSED_CYLINDER(neck, 0.4, MAX_WING, 5.0, 10, 10);
+	glRotatef(-30, 0.0, 1.0, 0.0);
+	glTranslatef(2.4, 0.5, 4.3);
+	//3
+	glRotatef(-60, 0.0, 0.0, 1.0);
+	glRotatef(90, 0.0, 1.0, 0.0);
+	SOLID_CLOSED_CYLINDER(neck, 0.4, 0.8, 11.0, 10, 10);
+	glRotatef(-90, 0.0, 1.0, 0.0);
+	glRotatef(60, 0.0, 0.0, 1.0);
+	glTranslatef(5.5, -9, -0.2);
+	glRotatef(-50, 0.0, 0.0, 1.0);
+	glRotatef(80, 1.0, 0.0, 0.0);
+	SOLID_CLOSED_CYLINDER(neck, 0.8, 0.01, 13.0, 10, 10);
+	glRotatef(-80, 1.0, 0.0, 0.0);
+	glRotatef(50, 0.0, 0.0, 1.0);
+	glTranslatef(-3.5, 5, 0.2);
+	glRotatef(60, 0.0, 0.0, 1.0);
+	//end
+	glPopMatrix();
+}
+
+void DrawRightWing() {
+	glPushMatrix();
+	glTranslatef(-1.0, STOMACH_HEIGHT, 0);
+	glRotatef(-30, 0.0, 0.0, -1.0);
+	glRotatef(-130, 1.0, 0.0, 0.0);
+	SOLID_CLOSED_CYLINDER(neck, 0.4, MAX_WING, 5.0, 10, 10);
+	glRotatef(130, 1.0, 0.0, 0.0);
+	glRotatef(30, 0.0, 0.0, -1.0);
+	glTranslatef(-1.7, 3, -2.7);
+	glRotatef(40, 0.0, 0.0, -1.0);
+	glRotatef(110, 0.0, -1.0, 0.0);
+	SOLID_CLOSED_CYLINDER(neck, 0.4, MAX_WING, 4.0, 10, 10);
+	glRotatef(-110, 0.0, -1.0, 0.0);
+	glRotatef(-40, 0.0, 0.0, -1.0);
+	glTranslatef(-2.7, 2.2, -1.2);
+	//1
+	glRotatef(-60, 0.0, 0.0, -1.0);
+	glRotatef(90, 0.0, -1.0, 0.0);
+	SOLID_CLOSED_CYLINDER(neck, 0.3, MAX_WING, 4.0, 10, 10);
+	glRotatef(-90, 0.0, -1.0, 0.0);
+	glRotatef(60, 0.0, 0.0, -1.0);
+	glTranslatef(-1.9, -2.8, -0.2);
+	glRotatef(80, 1.0, 0.0, 0.0);
+	SOLID_CLOSED_CYLINDER(neck, MAX_WING, 0.01, 4.0, 10, 10);
+	glRotatef(-80, 1.0, 0.0, 0.0);
+	glTranslatef(1.9, 2.8, 0.2);
+	//end
+	glRotatef(50, 0.0, 0.0, -1.0);
+	glRotatef(60, 0.0, -1.0, 0.0);
+	SOLID_CLOSED_CYLINDER(neck, 0.4, MAX_WING, 4.0, 10, 10);
+	glRotatef(-60, 0.0, -1.0, 0.0);
+	glTranslatef(-3.2, 0.5, 1.7);
+	//2
+	glRotatef(-30, 0.0, 0.0, -1.0);
+	glRotatef(-60, 0.0, 0.0, -1.0);
+	glRotatef(90, 0.0, -1.0, 0.0);
+	SOLID_CLOSED_CYLINDER(neck, 0.3, MAX_WING, 7.0, 10, 10);
+	glRotatef(-90, 0.0, -1.0, 0.0);
+	glRotatef(60, 0.0, 0.0, -1.0);
+	glTranslatef(-3.5, -5, -0.2);
+	glRotatef(-20, 0.0, 0.0, -1.0);
+	glRotatef(80, 1.0, 0.0, 0.0);
+	SOLID_CLOSED_CYLINDER(neck, MAX_WING, 0.01, 8.0, 10, 10);
+	glRotatef(-80, 1.0, 0.0, 0.0);
+	glRotatef(20, 0.0, 0.0, -1.0);
+	glTranslatef(3.5, 5, 0.2);
+	glRotatef(30, 0.0, 0.0, -1.0);
+	glRotatef(-50, 0.0, 0.0, -1.0);
+	//end
+	glTranslatef(-0.5, -0.5, 0);
+	glRotatef(60, 0.0, 0.0, -1.0);
+	glTranslatef(-0.5, 0, 0);
+	glRotatef(30, 0.0, -1.0, 0.0);
+	SOLID_CLOSED_CYLINDER(neck, 0.4, MAX_WING, 5.0, 10, 10);
+	glRotatef(-30, 0.0, -1.0, 0.0);
+	glTranslatef(-2.4, 0.5, 4.3);
+	//3
+	glRotatef(-60, 0.0, 0.0, -1.0);
+	glRotatef(90, 0.0, -1.0, 0.0);
+	SOLID_CLOSED_CYLINDER(neck, 0.4, 0.8, 11.0, 10, 10);
+	glRotatef(-90, 0.0, -1.0, 0.0);
+	glRotatef(60, 0.0, 0.0, -1.0);
+	glTranslatef(-5.5, -9, -0.2);
+	glRotatef(-50, 0.0, 0.0, -1.0);
+	glRotatef(80, 1.0, 0.0, 0.0);
+	SOLID_CLOSED_CYLINDER(neck, 0.8, 0.01, 13.0, 10, 10);
+	glRotatef(-80, 1.0, 0.0, 0.0);
+	glRotatef(50, 0.0, 0.0, -1.0);
+	glTranslatef(3.5, 5, 0.2);
+	glRotatef(60, 0.0, 0.0, -1.0);
+	//end
 	glPopMatrix();
 }
 
@@ -555,8 +649,6 @@ void DrawBody(GLfloat initAngle) {
 	glRotatef(90, 0.0, 1.0, 0.0);
 	SOLID_CLOSED_CYLINDER(lChest, CHEST_LOWER, CHEST_UPPER, CHEST_HEIGHT, 10, 10);
 	glRotatef(-90, 0.0, 1.0, 0.0);
-	// Terus gambar sayapnya dulu
-	DrawSayap();
 	DrawLShoulder();
 
 	glRotatef(-90, 0.0, 1.0, 0.0);
@@ -590,7 +682,7 @@ void DrawBody(GLfloat initAngle) {
 	
 	DrawTail();
 	DrawLeftWing();
-
+	DrawRightWing();
 
 	glTranslatef(0.0, 0.0, 0.0);
 	
@@ -657,7 +749,7 @@ void DrawScene(void) {
     // Menggambar objek utama
     glEnable(GL_LIGHTING);
 	    glPushMatrix();
-	    displayObject(0.0, 0.0, 9.0, 0.0);
+	    displayObject(0.0, 0.0, 9.0, -4.0);
 	    glPopMatrix();
 
         // Gambar dinding ~
@@ -791,22 +883,6 @@ void mouseClick(int btn, int state, int x, int y) {
 	}
 }
 
-// DisplayList dipergunakan untuk menggambar sayap yang cukup kompleks
-void initDisplayList()
-{
-    GLMmodel* sayap;
-    sayap = (GLMmodel*)malloc(sizeof(GLMmodel));
-	sayap = glmReadOBJ("sayap.obj");
-	
-	sayap_dp=glGenLists(1);
-	glNewList(sayap_dp,GL_COMPILE);
-		//glmList(f16, GLM_SMOOTH);
-		glmDraw(sayap, GLM_SMOOTH);
-	glEndList();
-
-}
-
-
 // Main Function
 int main(int argc, char **argv) {
     glutInit(&argc, argv);
@@ -821,8 +897,6 @@ int main(int argc, char **argv) {
 	glutMouseFunc(mouseClick);
 	glutIdleFunc(animation);
 	
-    initDisplayList();
-
     int animateInt, horizonInt, verticInt, materialInt, spinInt;
 	animateInt = glutCreateMenu(animateMenu);
     glutAddMenuEntry("neck", 0);

@@ -138,6 +138,7 @@ double jointInc = 10;
 GLfloat rot = 0.0, rotInc = 0.12; // Derajat perputaran model
 bool isSpin = true; // Apakah model perlu berputar?
 
+GLuint sayap_dp;
 GLuint kaktus_dp;
 GLuint shadowMapTexture;
 const int shadowMapSize = 512;
@@ -895,6 +896,7 @@ void mouseClick(int btn, int state, int x, int y) {
 // DisplayList dipergunakan untuk menggambar sayap yang cukup kompleks
 void initDisplayList()
 {
+	return;
     GLMmodel* sayap;
     GLMmodel* kaktus;
     sayap = (GLMmodel*)malloc(sizeof(GLMmodel));

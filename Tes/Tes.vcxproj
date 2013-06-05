@@ -42,7 +42,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>D:\dev\cinclude\;$(IncludePath)</IncludePath>
+    <IncludePath>D:\dev\cinclude\;.\libpng\;libpng;$(IncludePath)</IncludePath>
     <LibraryPath>D:\dev\cinclude\GL;$(LibraryPath)</LibraryPath>
     <CustomBuildBeforeTargets>Run</CustomBuildBeforeTargets>
   </PropertyGroup>
@@ -68,7 +68,7 @@
       <Message>Copy data asset</Message>
     </CustomBuildStep>
     <PreBuildEvent>
-      <Command>copy  /y *.mtl + *.obj ..\Debug</Command>
+      <Command>del /f /s /q ..\Debug &amp;&amp; copy  /y *.mtl + *.obj ..\Debug</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -96,7 +96,26 @@
     <ClInclude Include="Extensions\EXT_texture_env_combine_extension.h" />
     <ClInclude Include="GLee\GLee.h" />
     <ClInclude Include="glext.h" />
-    <ClInclude Include="glm.h" />
+    <ClInclude Include="glm\glm.h" />
+    <ClInclude Include="glm\glmint.h" />
+    <ClInclude Include="libpng\crc32.h" />
+    <ClInclude Include="libpng\deflate.h" />
+    <ClInclude Include="libpng\inffast.h" />
+    <ClInclude Include="libpng\inffixed.h" />
+    <ClInclude Include="libpng\inflate.h" />
+    <ClInclude Include="libpng\inftrees.h" />
+    <ClInclude Include="libpng\png.h" />
+    <ClInclude Include="libpng\pngconf.h" />
+    <ClInclude Include="libpng\pngdebug.h" />
+    <ClInclude Include="libpng\pnginfo.h" />
+    <ClInclude Include="libpng\pnglibconf.h" />
+    <ClInclude Include="libpng\pngpriv.h" />
+    <ClInclude Include="libpng\pngstruct.h" />
+    <ClInclude Include="libpng\trees.h" />
+    <ClInclude Include="libpng\unistd.h" />
+    <ClInclude Include="libpng\zconf.in.h" />
+    <ClInclude Include="libpng\zlib.h" />
+    <ClInclude Include="libpng\zutil.h" />
     <ClInclude Include="Maths\COLOR.h" />
     <ClInclude Include="Maths\Maths.h" />
     <ClInclude Include="Maths\MATRIX4X4.h" />
@@ -105,15 +124,44 @@
     <ClInclude Include="Maths\VECTOR3D.h" />
     <ClInclude Include="Maths\VECTOR4D.h" />
     <ClInclude Include="init.h" />
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="targetver.h" />
+    <ClInclude Include="model\zudomon.h" />
     <ClInclude Include="wglext.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Extensions\ARB_multitexture_extension.cpp" />
     <ClCompile Include="Extensions\EXT_texture_env_combine_extension.cpp" />
     <ClCompile Include="GLee\GLee.c" />
-    <ClCompile Include="glm.cpp" />
+    <ClCompile Include="glm\glm.c" />
+    <ClCompile Include="glm\glmimg.c" />
+    <ClCompile Include="glm\glmimg_png.c" />
+    <ClCompile Include="glm\glm_util.c" />
+    <ClCompile Include="libpng\adler32.c" />
+    <ClCompile Include="libpng\compress.c" />
+    <ClCompile Include="libpng\crc32.c" />
+    <ClCompile Include="libpng\deflate.c" />
+    <ClCompile Include="libpng\gzio.c" />
+    <ClCompile Include="libpng\infback.c" />
+    <ClCompile Include="libpng\inffast.c" />
+    <ClCompile Include="libpng\inflate.c" />
+    <ClCompile Include="libpng\inftrees.c" />
+    <ClCompile Include="libpng\png.c" />
+    <ClCompile Include="libpng\pngerror.c" />
+    <ClCompile Include="libpng\pngget.c" />
+    <ClCompile Include="libpng\pngmem.c" />
+    <ClCompile Include="libpng\pngpread.c" />
+    <ClCompile Include="libpng\pngread.c" />
+    <ClCompile Include="libpng\pngrio.c" />
+    <ClCompile Include="libpng\pngrtran.c" />
+    <ClCompile Include="libpng\pngrutil.c" />
+    <ClCompile Include="libpng\pngset.c" />
+    <ClCompile Include="libpng\pngtrans.c" />
+    <ClCompile Include="libpng\pngwio.c" />
+    <ClCompile Include="libpng\pngwrite.c" />
+    <ClCompile Include="libpng\pngwtran.c" />
+    <ClCompile Include="libpng\pngwutil.c" />
+    <ClCompile Include="libpng\trees.c" />
+    <ClCompile Include="libpng\uncompr.c" />
+    <ClCompile Include="libpng\zutil.c" />
     <ClCompile Include="Maths\COLOR.cpp" />
     <ClCompile Include="Maths\MATRIX4X4.cpp" />
     <ClCompile Include="Maths\PLANE.cpp" />
@@ -121,10 +169,7 @@
     <ClCompile Include="Maths\VECTOR3D.cpp" />
     <ClCompile Include="Maths\VECTOR4D.cpp" />
     <ClCompile Include="init.cpp" />
-    <ClCompile Include="stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-    </ClCompile>
+    <ClCompile Include="model\zudomon.cpp" />
     <ClCompile Include="1006671425-1006671766.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,5 +1,6 @@
 
 #define GLUT_DISABLE_ATEXIT_HACK
+#undef WIN32_LEAN_AND_MEAN 
 #include <stdio.h>
 #include <stdlib.h>
 #include <windows.h>
@@ -49,6 +50,7 @@ using namespace std;
 #define CHEST_HEIGHT 3.2
 #define STOMACH_UPPER 1.7
 #define STOMACH_LOWER 1.2
+
 #define STOMACH_HEIGHT 3.6
 
 #define SHOULDER_UPPER 0.1
@@ -923,7 +925,7 @@ void initDisplayList()
 	
 	kaktus_dp=glGenLists(1);
 	glNewList(kaktus_dp,GL_COMPILE);
-        glmDraw(kaktus, GLM_SMOOTH | GLM_MATERIAL | GLM_TEXTURE | GLM_COLOR);
+        glmDraw(kaktus, GLM_SMOOTH | GLM_TEXTURE | GLM_COLOR);
 		//glmDraw(kaktus, GLM_SMOOTH);
 	glEndList();
 

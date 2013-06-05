@@ -17,20 +17,20 @@
     <Filter Include="Libs">
       <UniqueIdentifier>{be2d66a4-12df-4d7e-9ed2-cd6686fc5f07}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Model">
+      <UniqueIdentifier>{594193e1-fca5-44f8-8063-0eb3efe73e32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="pnglib">
+      <UniqueIdentifier>{2e31dc3e-c4f5-4bb8-8072-464b320f2951}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="zlib">
+      <UniqueIdentifier>{f6eadd0f-f0db-497d-bc60-72fb0be068f0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="targetver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="glm.h">
-      <Filter>Libs</Filter>
-    </ClInclude>
     <ClInclude Include="GLee\GLee.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -70,16 +70,73 @@
     <ClInclude Include="init.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="model\zudomon.h">
+      <Filter>Model</Filter>
+    </ClInclude>
+    <ClInclude Include="glm\glm.h">
+      <Filter>Libs</Filter>
+    </ClInclude>
+    <ClInclude Include="glm\glmint.h">
+      <Filter>Libs</Filter>
+    </ClInclude>
+    <ClInclude Include="libpng\pngstruct.h">
+      <Filter>pnglib</Filter>
+    </ClInclude>
+    <ClInclude Include="libpng\png.h">
+      <Filter>pnglib</Filter>
+    </ClInclude>
+    <ClInclude Include="libpng\pngconf.h">
+      <Filter>pnglib</Filter>
+    </ClInclude>
+    <ClInclude Include="libpng\pngdebug.h">
+      <Filter>pnglib</Filter>
+    </ClInclude>
+    <ClInclude Include="libpng\pnginfo.h">
+      <Filter>pnglib</Filter>
+    </ClInclude>
+    <ClInclude Include="libpng\pnglibconf.h">
+      <Filter>pnglib</Filter>
+    </ClInclude>
+    <ClInclude Include="libpng\pngpriv.h">
+      <Filter>pnglib</Filter>
+    </ClInclude>
+    <ClInclude Include="libpng\unistd.h">
+      <Filter>pnglib</Filter>
+    </ClInclude>
+    <ClInclude Include="libpng\zlib.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="libpng\zutil.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="libpng\inftrees.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="libpng\deflate.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="libpng\zconf.in.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="libpng\inflate.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="libpng\crc32.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="libpng\inffast.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="libpng\inffixed.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="libpng\trees.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="1006671425-1006671766.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="glm.cpp">
-      <Filter>Libs</Filter>
     </ClCompile>
     <ClCompile Include="Extensions\ARB_multitexture_extension.cpp">
       <Filter>Header Files</Filter>
@@ -110,6 +167,102 @@
     </ClCompile>
     <ClCompile Include="init.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="model\zudomon.cpp">
+      <Filter>Model</Filter>
+    </ClCompile>
+    <ClCompile Include="glm\glm.c">
+      <Filter>Libs</Filter>
+    </ClCompile>
+    <ClCompile Include="glm\glm_util.c">
+      <Filter>Libs</Filter>
+    </ClCompile>
+    <ClCompile Include="glm\glmimg.c">
+      <Filter>Libs</Filter>
+    </ClCompile>
+    <ClCompile Include="glm\glmimg_png.c">
+      <Filter>Libs</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\pngrtran.c">
+      <Filter>pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\pngrutil.c">
+      <Filter>pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\pngset.c">
+      <Filter>pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\pngtrans.c">
+      <Filter>pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\pngwio.c">
+      <Filter>pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\pngwrite.c">
+      <Filter>pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\pngwtran.c">
+      <Filter>pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\pngwutil.c">
+      <Filter>pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\png.c">
+      <Filter>pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\pngerror.c">
+      <Filter>pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\pngget.c">
+      <Filter>pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\pngmem.c">
+      <Filter>pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\pngpread.c">
+      <Filter>pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\pngread.c">
+      <Filter>pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\pngrio.c">
+      <Filter>pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\gzio.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\deflate.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\inftrees.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\inflate.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\zutil.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\trees.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\crc32.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\infback.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\adler32.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\inffast.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\compress.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\uncompr.c">
+      <Filter>zlib</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

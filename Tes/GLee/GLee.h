@@ -53,7 +53,7 @@
 #endif
 
 #ifdef WIN32
-	#define WIN32_LEAN_AND_MEAN
+#undef WIN32_LEAN_AND_MEAN 
 	#include <windows.h>
 	#include <GL/gl.h>
 #elif defined(__APPLE__) || defined(__APPLE_CC__)

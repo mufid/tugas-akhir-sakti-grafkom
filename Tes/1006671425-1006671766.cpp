@@ -13,6 +13,7 @@
 #include "Maths\Maths.h"
 #include "glm\glm.h"
 #include "model/zudomon.h"
+#include "init.h"
 
 using namespace std;
 
@@ -80,10 +81,10 @@ GLfloat lightD[3][4] = {{0.0, 0.0, 0.8, 1.0},
                         {1.0, 1.0, 1.0, 1.0}};
 
 // Horizontal Light
-GLfloat horizonA[] = {0.0, 0.0, 0.0, 1.0},
+GLfloat horizonA[] = {0.3, 0.3, 0.3, 1.0},
 		horizonD[] = {0.8, 0.0, 0.0, 1.0}, 
 		horizonS[] = {0.6, 0.6, 0.6, 1.0},
-		horizonP[] = {10.0, 3.0, -30.0, 1.0};
+		horizonP[] = {10.0, 3.0, 0.0, 1.0};
 
 // Vertical Light
 GLfloat verticA[] = {0.0, 0.0, 0.0, 1.0},
@@ -141,9 +142,6 @@ double jointInc = 10;
 GLfloat rot = 0.0, rotInc = 0.12; // Derajat perputaran model
 bool isSpin = true; // Apakah model perlu berputar?
 
-GLuint sayap_dp;
-GLuint kaktus_dp;
-GLuint tes_dp;
 GLuint shadowMapTexture;
 const int shadowMapSize = 512;
 
@@ -767,6 +765,7 @@ void DrawScene(void) {
         glPopMatrix(); 
 
         // Gambar kaktus yey
+        glEnable(GL_TEXTURE_2D);
         glPushMatrix();
             glTranslatef(-10.f, -5.f, -10.f);
             glScalef(2.f,2.f,2.f);
@@ -781,6 +780,9 @@ void DrawScene(void) {
             glTranslatef(0.f, -5.f, -10.f);
             glScalef(2.f,2.f,2.f);
             glCallList(kaktus_dp);
+
+            glLoadIdentity();
+            gambarNemo(0.f);
 
         glPopMatrix();
 
@@ -817,9 +819,10 @@ void display(void) {
         glColor3f(0.85, 0.2, 0.2);
         glTranslatef(0.0, -1.0, -15.0);
         glRotatef(lightDegree, 0.0, 1.0, 0.0);     
-	    if (isHorizon) glLightfv(GL_LIGHT1, GL_POSITION, horizonP);
+	    
         glGetFloatv(GL_MODELVIEW_MATRIX, lightProjectionMatrix1);
         glTranslatef(10.0, 4.0, -15.0);
+        if (isHorizon) glLightfv(GL_LIGHT1, GL_POSITION, horizonP);
         glutSolidSphere(0.3, 10, 10);
     }
     glPopMatrix();
@@ -847,7 +850,6 @@ void display(void) {
 
     DrawScene();
     
-    glDisable(GL_TEXTURE_2D);
 	glFlush();
 	glutSwapBuffers();
 }
@@ -915,31 +917,7 @@ void mouseClick(int btn, int state, int x, int y) {
 	}
 }
 
-// DisplayList dipergunakan untuk menggambar sayap yang cukup kompleks
-void initDisplayList()
-{
-    GLMmodel* kaktus;
 
-    kaktus = (GLMmodel*)malloc(sizeof(GLMmodel));
-	kaktus = glmReadOBJ("kaktus.obj");
-	
-	kaktus_dp=glGenLists(1);
-	glNewList(kaktus_dp,GL_COMPILE);
-        glmDraw(kaktus, GLM_SMOOTH | GLM_TEXTURE | GLM_COLOR);
-		//glmDraw(kaktus, GLM_SMOOTH);
-	glEndList();
-
-	return;
-    GLMmodel* sayap;
-    sayap = (GLMmodel*)malloc(sizeof(GLMmodel));
-	sayap = glmReadOBJ("sayap.obj");
-	
-	sayap_dp=glGenLists(1);
-	glNewList(sayap_dp,GL_COMPILE);
-		glmList(sayap, GLM_SMOOTH);
-		//glmDraw(sayap, GLM_SMOOTH);
-	glEndList();
-}
 
 
 // Main Function

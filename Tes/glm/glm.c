@@ -1,5 +1,3 @@
-#undef WIN32_LEAN_AND_MEAN 
-#define  _CRT_SECURE_NO_WARNINGS
 /*    
       glm.c
       Nate Robins, 1997, 2000
@@ -274,7 +272,7 @@ glmFindOrAddTexture(GLMmodel* model, const char* name)
        texture (0). */
     model->numtextures++;
     model->textures = (GLMtexture*)realloc(model->textures, sizeof(GLMtexture)*model->numtextures);
-    model->textures[model->numtextures-1].name = _strdup(name);
+    model->textures[model->numtextures-1].name = strdup(name);
     model->textures[model->numtextures-1].id =
         glmLoadTexture(filename, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE, &width, &height);
     model->textures[model->numtextures-1].width = width;
@@ -294,12 +292,10 @@ glmFindOrAddTexture(GLMmodel* model, const char* name)
 static GLvoid
 glmReadMTL(GLMmodel* model, char* name)
 {
-    char *rem;
-    int remi;
-
     FILE* file;
     char* dir;
     char* filename;
+    char* tex_filename;
     char* t_filename;
     char    buf[128];
     GLuint nummaterials, i;
@@ -314,7 +310,6 @@ glmReadMTL(GLMmodel* model, char* name)
         __glmFatalError( "glmReadMTL() failed: can't open material file \"%s\".",
 			 filename);
     }
-    free(filename);
     
     /* count the number of materials in the file */
     nummaterials = 1;
@@ -322,18 +317,18 @@ glmReadMTL(GLMmodel* model, char* name)
         switch(buf[0]) {
         case '#':               /* comment */
             /* eat up rest of line */
-            rem = fgets(buf, sizeof(buf), file);
+            fgets(buf, sizeof(buf), file);
             break;
         case 'n':               /* newmtl */
 	    if(strncmp(buf, "newmtl", 6) != 0)
 		__glmFatalError("glmReadMTL: Got \"%s\" instead of \"newmtl\" in file \"%s\"", buf, filename);
-            rem = fgets(buf, sizeof(buf), file);
+            fgets(buf, sizeof(buf), file);
             nummaterials++;
             sscanf(buf, "%s %s", buf, buf);
             break;
         default:
             /* eat up rest of line */
-            rem = fgets(buf, sizeof(buf), file);
+            fgets(buf, sizeof(buf), file);
             break;
         }
     }
@@ -369,26 +364,26 @@ glmReadMTL(GLMmodel* model, char* name)
         switch(buf[0]) {
         case '#':               /* comment */
             /* eat up rest of line */
-            rem = fgets(buf, sizeof(buf), file);
+            fgets(buf, sizeof(buf), file);
             break;
         case 'n':               /* newmtl */
 #if 0
             __glmWarning("name=%s; Ns=%g; Ka=%g,%g,%g; Kd=%g,%g,%g; Ks=%g,%g,%g",
-                         model->materials[nummaterials].name,
-                         model->materials[nummaterials].shininess/128.0*GLM_MAX_SHININESS,
-                         model->materials[nummaterials].ambient[0],
-                         model->materials[nummaterials].ambient[1],
-                         model->materials[nummaterials].ambient[2],
-                         model->materials[nummaterials].diffuse[0],
-                         model->materials[nummaterials].diffuse[1],
-                         model->materials[nummaterials].diffuse[2],
-                         model->materials[nummaterials].specular[0],
-                         model->materials[nummaterials].specular[1],
-                         model->materials[nummaterials].specular[2]);
+			 model->materials[nummaterials].name,
+			 model->materials[nummaterials].shininess/128.0*GLM_MAX_SHININESS,
+			 model->materials[nummaterials].ambient[0],
+			 model->materials[nummaterials].ambient[1],
+			 model->materials[nummaterials].ambient[2],
+			 model->materials[nummaterials].diffuse[0],
+			 model->materials[nummaterials].diffuse[1],
+			 model->materials[nummaterials].diffuse[2],
+			 model->materials[nummaterials].specular[0],
+			 model->materials[nummaterials].specular[1],
+			 model->materials[nummaterials].specular[2]);
 #endif
-            if(strncmp(buf, "newmtl", 6) != 0)
-                __glmFatalError("glmReadMTL: Got \"%s\" instead of \"newmtl\" in file \"%s\"", buf, filename);
-            rem = fgets(buf, sizeof(buf), file);
+	    if(strncmp(buf, "newmtl", 6) != 0)
+		__glmFatalError("glmReadMTL: Got \"%s\" instead of \"newmtl\" in file \"%s\"", buf, filename);
+            fgets(buf, sizeof(buf), file);
             sscanf(buf, "%s %s", buf, buf);
             nummaterials++;
             model->materials[nummaterials].name = __glmStrdup(buf);
@@ -396,7 +391,7 @@ glmReadMTL(GLMmodel* model, char* name)
         case 'N':
             switch(buf[1]) {
             case 's':
-                remi = fscanf(file, "%f", &model->materials[nummaterials].shininess);
+                fscanf(file, "%f", &model->materials[nummaterials].shininess);
                 /* wavefront shininess is from [0, 1000], so scale for OpenGL */
                 model->materials[nummaterials].shininess /= GLM_MAX_SHININESS;
                 model->materials[nummaterials].shininess *= 128.0;
@@ -406,53 +401,53 @@ glmReadMTL(GLMmodel* model, char* name)
                    of 1 will cause no refraction. A higher value implies
                    refraction. */
                 __glmWarning("refraction index ignored");
-                rem = fgets(buf, sizeof(buf), file);
+                fgets(buf, sizeof(buf), file);
                 break;
             default:
-                __glmWarning("glmReadMTL: Command \"%s\" ignored", buf);
-                rem = fgets(buf, sizeof(buf), file);
+		__glmWarning("glmReadMTL: Command \"%s\" ignored", buf);
+                fgets(buf, sizeof(buf), file);
                 break;
             }
-            break;
+	    break;
         case 'K':
             switch(buf[1]) {
             case 'd':
-                remi = fscanf(file, "%f %f %f",
-                       &model->materials[nummaterials].diffuse[0],
-                       &model->materials[nummaterials].diffuse[1],
-                       &model->materials[nummaterials].diffuse[2]);
+                fscanf(file, "%f %f %f",
+		       &model->materials[nummaterials].diffuse[0],
+		       &model->materials[nummaterials].diffuse[1],
+		       &model->materials[nummaterials].diffuse[2]);
                 break;
             case 's':
-                remi = fscanf(file, "%f %f %f",
-                       &model->materials[nummaterials].specular[0],
-                       &model->materials[nummaterials].specular[1],
-                       &model->materials[nummaterials].specular[2]);
+                fscanf(file, "%f %f %f",
+		       &model->materials[nummaterials].specular[0],
+		       &model->materials[nummaterials].specular[1],
+		       &model->materials[nummaterials].specular[2]);
                 break;
             case 'a':
-                remi = fscanf(file, "%f %f %f",
-                       &model->materials[nummaterials].ambient[0],
-                       &model->materials[nummaterials].ambient[1],
-                       &model->materials[nummaterials].ambient[2]);
+                fscanf(file, "%f %f %f",
+		       &model->materials[nummaterials].ambient[0],
+		       &model->materials[nummaterials].ambient[1],
+		       &model->materials[nummaterials].ambient[2]);
                 break;
             default:
-                __glmWarning("glmReadMTL: Command \"%s\" ignored", buf);
+		__glmWarning("glmReadMTL: Command \"%s\" ignored", buf);
                 /* eat up rest of line */
-                rem = fgets(buf, sizeof(buf), file);
+                fgets(buf, sizeof(buf), file);
                 break;
             }
             break;
         case 'd':
             /* d = Dissolve factor (pseudo-transparency).
                Values are from 0-1. 0 is completely transparent, 1 is opaque. */
-            {
-                float alpha;
-                remi = fscanf(file, "%f", &alpha);
-                model->materials[nummaterials].diffuse[3] = alpha;
-            }
-            break;
+	{
+	    float alpha;
+	    fscanf(file, "%f", &alpha);
+	    model->materials[nummaterials].diffuse[3] = alpha;
+	}
+	break;
         case 'i':
-            if(strncmp(buf, "illum", 5) != 0)
-                __glmFatalError("glmReadMTL: Got \"%s\" instead of \"illum\" in file \"%s\"", buf, filename);
+	    if(strncmp(buf, "illum", 5) != 0)
+		__glmFatalError("glmReadMTL: Got \"%s\" instead of \"illum\" in file \"%s\"", buf, filename);
             /* illum = (0, 1, or 2) 0 to disable lighting, 1 for
                ambient & diffuse only (specular color set to black), 2
                for full lighting. I've also seen values of 3 and 4 for
@@ -463,41 +458,42 @@ glmReadMTL(GLMmodel* model, char* name)
                impression that some people just make stuff up and add
                whatever they want to these files, so there could be
                anything in there ;). */
-            {
-                int illum;
-                remi = fscanf(file, "%d", &illum);
-                if(illum != 2)	/* illum=2 is standard lighting */
-                    __glmWarning("illum material ignored: illum %d", illum);
-            }
-            break;
+	    {
+		int illum;
+		fscanf(file, "%d", &illum);
+		if(illum != 2)	/* illum=2 is standard lighting */
+		    __glmWarning("illum material ignored: illum %d", illum);
+	    }
+	    break;
         case 'm':
             /* texture map */
-            filename = malloc(FILENAME_MAX);
-            rem = fgets(filename, FILENAME_MAX, file);
-            t_filename = __glmStrStrip((char*)filename);
-            free(filename);
+            tex_filename = malloc(FILENAME_MAX);
+            fgets(tex_filename, FILENAME_MAX, file);
+            t_filename = __glmStrStrip(tex_filename);
+            free(tex_filename);
             if(strncmp(buf, "map_Kd", 6) == 0) {
                 model->materials[nummaterials].map_diffuse = glmFindOrAddTexture(model, t_filename);
                 free(t_filename);
             } else {
                 __glmWarning("map %s %s ignored",buf,t_filename);
                 free(t_filename);
-                rem = fgets(buf, sizeof(buf), file);
+                fgets(buf, sizeof(buf), file);
             }
             break;
         case 'r':
             /* reflection type and filename (?) */
-            rem = fgets(buf, sizeof(buf), file);
+	    fgets(buf, sizeof(buf), file);
             __glmWarning("reflection type ignored: r%s",buf);
-            break;
-        default:
-            /* eat up rest of line */
-            rem = fgets(buf, sizeof(buf), file);
-            break;
+	    break;
+	default:
+	    /* eat up rest of line */
+	    fgets(buf, sizeof(buf), file);
+	    break;
         }
     }
     free(dir);
     fclose(file);
+    free(filename);
 }
 
 /* glmWriteMTL: write a wavefront material library file
@@ -551,6 +547,7 @@ glmWriteMTL(GLMmodel* model, char* modelpath, char* mtllibname)
         fprintf(file, "Ns %f\n", material->shininess / 128.0 * GLM_MAX_SHININESS);
         fprintf(file, "\n");
     }
+    fclose(file);
 }
 
 
@@ -570,9 +567,7 @@ glmFirstPass(GLMmodel* model, FILE* file)
     GLMgroup* group;            /* current group */
     unsigned    v, n, t;
     char        buf[128];
-    char *rem;
-    int remi;
-
+    
     /* make a default group */
     group = glmAddGroup(model, "default");
     
@@ -581,23 +576,23 @@ glmFirstPass(GLMmodel* model, FILE* file)
         switch(buf[0]) {
         case '#':               /* comment */
             /* eat up rest of line */
-            rem = fgets(buf, sizeof(buf), file);
+            fgets(buf, sizeof(buf), file);
             break;
         case 'v':               /* v, vn, vt */
             switch(buf[1]) {
             case '\0':          /* vertex */
                 /* eat up rest of line */
-                rem = fgets(buf, sizeof(buf), file);
+                fgets(buf, sizeof(buf), file);
                 numvertices++;
                 break;
             case 'n':           /* normal */
                 /* eat up rest of line */
-                rem = fgets(buf, sizeof(buf), file);
+                fgets(buf, sizeof(buf), file);
                 numnormals++;
                 break;
             case 't':           /* texcoord */
                 /* eat up rest of line */
-                rem = fgets(buf, sizeof(buf), file);
+                fgets(buf, sizeof(buf), file);
                 numtexcoords++;
                 break;
             default:
@@ -608,7 +603,7 @@ glmFirstPass(GLMmodel* model, FILE* file)
 	case 'm':
 	    if(strncmp(buf, "mtllib", 6) != 0)
 		__glmFatalError("glmReadOBJ: Got \"%s\" instead of \"mtllib\"", buf);
-	    rem = fgets(buf, sizeof(buf), file);
+	    fgets(buf, sizeof(buf), file);
 	    sscanf(buf, "%s %s", buf, buf);
 	    model->mtllibname = __glmStrStrip((char*)buf);
 	    glmReadMTL(model, model->mtllibname);
@@ -617,11 +612,11 @@ glmFirstPass(GLMmodel* model, FILE* file)
 	    if(strncmp(buf, "usemtl", 6) != 0)
 		__glmFatalError("glmReadOBJ: Got \"%s\" instead of \"usemtl\"", buf);
 	    /* eat up rest of line */
-	    rem = fgets(buf, sizeof(buf), file);
+	    fgets(buf, sizeof(buf), file);
 	    break;
 	case 'g':               /* group */
 	    /* eat up rest of line */
-	    rem = fgets(buf, sizeof(buf), file);
+	    fgets(buf, sizeof(buf), file);
 #if SINGLE_STRING_GROUP_NAMES
 	    sscanf(buf, "%s", buf);
 #else
@@ -631,13 +626,13 @@ glmFirstPass(GLMmodel* model, FILE* file)
 	    break;
 	case 'f':               /* face */
 	    v = n = t = 0;
-	    remi = fscanf(file, "%s", buf);
+	    fscanf(file, "%s", buf);
 	    /* can be one of %d, %d//%d, %d/%d, %d/%d/%d %d//%d */
                 if (strstr(buf, "//")) {
                     /* v//n */
                     sscanf(buf, "%d//%d", &v, &n);
-                    remi = fscanf(file, "%d//%d", &v, &n);
-                    remi = fscanf(file, "%d//%d", &v, &n);
+                    fscanf(file, "%d//%d", &v, &n);
+                    fscanf(file, "%d//%d", &v, &n);
                     numtriangles++;
                     group->numtriangles++;
                     while(fscanf(file, "%d//%d", &v, &n) > 0) {
@@ -646,8 +641,8 @@ glmFirstPass(GLMmodel* model, FILE* file)
                     }
                 } else if (sscanf(buf, "%d/%d/%d", &v, &t, &n) == 3) {
                     /* v/t/n */
-                    remi = fscanf(file, "%d/%d/%d", &v, &t, &n);
-                    remi = fscanf(file, "%d/%d/%d", &v, &t, &n);
+                    fscanf(file, "%d/%d/%d", &v, &t, &n);
+                    fscanf(file, "%d/%d/%d", &v, &t, &n);
                     numtriangles++;
                     group->numtriangles++;
                     while(fscanf(file, "%d/%d/%d", &v, &t, &n) > 0) {
@@ -656,8 +651,8 @@ glmFirstPass(GLMmodel* model, FILE* file)
                     }
                 } else if (sscanf(buf, "%d/%d", &v, &t) == 2) {
                     /* v/t */
-                    remi = fscanf(file, "%d/%d", &v, &t);
-                    remi = fscanf(file, "%d/%d", &v, &t);
+                    fscanf(file, "%d/%d", &v, &t);
+                    fscanf(file, "%d/%d", &v, &t);
                     numtriangles++;
                     group->numtriangles++;
                     while(fscanf(file, "%d/%d", &v, &t) > 0) {
@@ -666,8 +661,8 @@ glmFirstPass(GLMmodel* model, FILE* file)
                     }
                 } else {
                     /* v */
-                    remi = fscanf(file, "%d", &v);
-                    remi = fscanf(file, "%d", &v);
+                    fscanf(file, "%d", &v);
+                    fscanf(file, "%d", &v);
                     numtriangles++;
                     group->numtriangles++;
                     while(fscanf(file, "%d", &v) > 0) {
@@ -679,7 +674,7 @@ glmFirstPass(GLMmodel* model, FILE* file)
                 
 	default:
 	    /* eat up rest of line */
-	    rem = fgets(buf, sizeof(buf), file);
+	    fgets(buf, sizeof(buf), file);
 	    break;
         }
     }
@@ -719,9 +714,7 @@ glmSecondPass(GLMmodel* model, FILE* file)
     GLuint  material;           /* current material */
     unsigned int v, n, t;
     char        buf[128];
-    char *rem;
-    int remi;
-
+    
     /* set the pointer shortcuts */
     vertices       = model->vertices;
     normals    = model->normals;
@@ -737,26 +730,26 @@ glmSecondPass(GLMmodel* model, FILE* file)
         switch(buf[0]) {
         case '#':               /* comment */
             /* eat up rest of line */
-            rem = fgets(buf, sizeof(buf), file);
+            fgets(buf, sizeof(buf), file);
             break;
         case 'v':               /* v, vn, vt */
             switch(buf[1]) {
             case '\0':          /* vertex */
-                remi = fscanf(file, "%f %f %f", 
+                fscanf(file, "%f %f %f", 
                     &vertices[3 * numvertices + 0], 
                     &vertices[3 * numvertices + 1], 
                     &vertices[3 * numvertices + 2]);
                 numvertices++;
                 break;
             case 'n':           /* normal */
-                remi = fscanf(file, "%f %f %f", 
+                fscanf(file, "%f %f %f", 
                     &normals[3 * numnormals + 0],
                     &normals[3 * numnormals + 1], 
                     &normals[3 * numnormals + 2]);
                 numnormals++;
                 break;
             case 't':           /* texcoord */
-                remi = fscanf(file, "%f %f", 
+                fscanf(file, "%f %f", 
                     &texcoords[2 * numtexcoords + 0],
                     &texcoords[2 * numtexcoords + 1]);
                 numtexcoords++;
@@ -764,7 +757,7 @@ glmSecondPass(GLMmodel* model, FILE* file)
             }
             break;
             case 'u':
-                rem = fgets(buf, sizeof(buf), file);
+                fgets(buf, sizeof(buf), file);
                 sscanf(buf, "%s %s", buf, buf);
                 material = glmFindMaterial(model, buf);
 #ifdef MATERIAL_BY_FACE
@@ -776,7 +769,7 @@ glmSecondPass(GLMmodel* model, FILE* file)
                 break;
             case 'g':               /* group */
                 /* eat up rest of line */
-                rem = fgets(buf, sizeof(buf), file);
+                fgets(buf, sizeof(buf), file);
 #if SINGLE_STRING_GROUP_NAMES
                 sscanf(buf, "%s", buf);
 #else
@@ -795,7 +788,7 @@ glmSecondPass(GLMmodel* model, FILE* file)
                     group->material = material;
                 T(numtriangles).material = material;
 #endif
-                remi = fscanf(file, "%s", buf);
+                fscanf(file, "%s", buf);
                 /* can be one of %d, %d//%d, %d/%d, %d/%d/%d %d//%d */
                 if (strstr(buf, "//")) {
                     /* v//n */
@@ -803,11 +796,11 @@ glmSecondPass(GLMmodel* model, FILE* file)
                     T(numtriangles).vindices[0] = v;
                     T(numtriangles).tindices[0] = -1;
                     T(numtriangles).nindices[0] = n;
-                    remi = fscanf(file, "%u//%u", &v, &n);
+                    fscanf(file, "%u//%u", &v, &n);
                     T(numtriangles).vindices[1] = v;
                     T(numtriangles).tindices[1] = -1;
                     T(numtriangles).nindices[1] = n;
-                    remi = fscanf(file, "%u//%u", &v, &n);
+                    fscanf(file, "%u//%u", &v, &n);
                     T(numtriangles).vindices[2] = v;
 		    T(numtriangles).tindices[2] = -1;
                     T(numtriangles).nindices[2] = n;
@@ -834,11 +827,11 @@ glmSecondPass(GLMmodel* model, FILE* file)
                     T(numtriangles).vindices[0] = v;
                     T(numtriangles).tindices[0] = t;
                     T(numtriangles).nindices[0] = n;
-                    remi = fscanf(file, "%u/%u/%u", &v, &t, &n);
+                    fscanf(file, "%u/%u/%u", &v, &t, &n);
                     T(numtriangles).vindices[1] = v;
                     T(numtriangles).tindices[1] = t;
                     T(numtriangles).nindices[1] = n;
-                    remi = fscanf(file, "%u/%u/%u", &v, &t, &n);
+                    fscanf(file, "%u/%u/%u", &v, &t, &n);
                     T(numtriangles).vindices[2] = v;
                     T(numtriangles).tindices[2] = t;
                     T(numtriangles).nindices[2] = n;
@@ -865,11 +858,11 @@ glmSecondPass(GLMmodel* model, FILE* file)
                     T(numtriangles).vindices[0] = v;
                     T(numtriangles).tindices[0] = t;
 		    T(numtriangles).nindices[0] = -1;
-		    remi = fscanf(file, "%u/%u", &v, &t);
+		    fscanf(file, "%u/%u", &v, &t);
                     T(numtriangles).vindices[1] = v;
                     T(numtriangles).tindices[1] = t;
 		    T(numtriangles).nindices[1] = -1;
-                    remi = fscanf(file, "%u/%u", &v, &t);
+                    fscanf(file, "%u/%u", &v, &t);
                     T(numtriangles).vindices[2] = v;
                     T(numtriangles).tindices[2] = t;
 		    T(numtriangles).nindices[2] = -1;
@@ -897,11 +890,11 @@ glmSecondPass(GLMmodel* model, FILE* file)
                     T(numtriangles).vindices[0] = v;
                     T(numtriangles).tindices[0] = -1;
 		    T(numtriangles).nindices[0] = -1;
-		    remi = fscanf(file, "%u", &v);
+		    fscanf(file, "%u", &v);
                     T(numtriangles).vindices[1] = v;
                     T(numtriangles).tindices[1] = -1;
 		    T(numtriangles).nindices[1] = -1;
-                    remi = fscanf(file, "%u", &v);
+                    fscanf(file, "%u", &v);
                     T(numtriangles).vindices[2] = v;
                     T(numtriangles).tindices[2] = -1;
 		    T(numtriangles).nindices[2] = -1;
@@ -928,7 +921,7 @@ glmSecondPass(GLMmodel* model, FILE* file)
                 
             default:
                 /* eat up rest of line */
-                rem = fgets(buf, sizeof(buf), file);
+                fgets(buf, sizeof(buf), file);
                 break;
     }
   }
@@ -1284,12 +1277,11 @@ glmVertexNormals(GLMmodel* model, GLfloat angle, GLboolean keep_existing)
 		for (j = 0; j<3; j++) {
 		    assert(T(node->index).vindices[j] <= model->numvertices);
 		    if (T(node->index).vindices[j] == i) {
-			if(T(node->index).nindices[j] > numnormals);
 			assert(T(node->index).nindices[j] == -1 || T(node->index).nindices[j] <= model->numnormals);
 			if (!keep_existing || T(node->index).nindices[j] == -1) {
 			    if (avg_index == -1) {
 				while (model->numnormals < numnormals) {
-				    DBG_(__glmWarning( "glmVertexNormals(): realloc %d+100\n", model->numnormals+100));
+				    DBG_(__glmWarning( "glmVertexNormals(): realloc %d+1000\n", model->numnormals+1000));
 				    /* allocate 1000 more normals */
 				    model->numnormals += 1000;
 				    model->normals = (GLfloat*)realloc(model->normals, sizeof(GLfloat)* 3 * (model->numnormals+1));
@@ -1314,7 +1306,7 @@ glmVertexNormals(GLMmodel* model, GLfloat angle, GLboolean keep_existing)
 		int discard = 1;
 
 		while (model->numnormals < numnormals) {
-		    __glmWarning( "glmVertexNormals(): realloc %d+100\n", model->numnormals+100);
+                    DBG_(__glmWarning( "glmVertexNormals(): realloc %d+100\n", model->numnormals+100));
 		    /* allocate 100 more normals */
 		    model->numnormals += 100;
 		    model->normals = (GLfloat*)realloc(model->normals, sizeof(GLfloat)* 3 * (model->numnormals+1));
@@ -1877,9 +1869,8 @@ glmDraw(GLMmodel* model, GLuint mode)
         mode &= ~GLM_SMOOTH;
     }
     if (mode & GLM_TEXTURE && !model->texcoords) {
-        // Warnings ignored for DRC project
-        //__glmWarning("glmDraw() warning: texture render mode requested "
-	//	     "with no texture coordinates defined.");
+        __glmWarning("glmDraw() warning: texture render mode requested "
+		     "with no texture coordinates defined.");
         mode &= ~GLM_TEXTURE;
     }
     if (mode & GLM_FLAT && mode & GLM_SMOOTH) {
@@ -1893,9 +1884,8 @@ glmDraw(GLMmodel* model, GLuint mode)
         mode &= ~GLM_COLOR;
     }
     if (mode & GLM_MATERIAL && !model->materials) {
-        // Warnings ignored for DRC project
-        //__glmWarning("glmDraw() warning: material render mode requested "
-	//	     "with no materials defined.");
+        __glmWarning("glmDraw() warning: material render mode requested "
+		     "with no materials defined.");
         mode &= ~GLM_MATERIAL;
     }
     if (mode & GLM_COLOR && mode & GLM_MATERIAL) {
@@ -1910,6 +1900,9 @@ glmDraw(GLMmodel* model, GLuint mode)
     if (mode & GLM_TEXTURE) {
         glEnable(_glmTextureTarget);
         glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    }
+    else {
+        glDisable(_glmTextureTarget);
     }
 #ifdef GLM_2_SIDED
     if(mode & GLM_2_SIDED)
@@ -1994,23 +1987,23 @@ glmDraw(GLMmodel* model, GLuint mode)
 		    }
 		
 		    if (mode & GLM_FLAT)
-                glNormal3fv(&model->facetnorms[3 * triangle->findex]);
+			glNormal3fv(&model->facetnorms[3 * triangle->findex]);
 		
 		    for (j=0; j<3; j++) {
-                if (mode & GLM_SMOOTH && (triangle->nindices[j]!=-1)) {
-                    assert(triangle->nindices[j]>=1 && triangle->nindices[j]<=model->numnormals);
-                    glNormal3fv(&model->normals[3 * triangle->nindices[j]]);
-                }
-                if (mode & GLM_TEXTURE && (triangle->tindices[j]!=-1) && map_diffuse != -1) {
-                    assert(map_diffuse >= 0 && map_diffuse < model->numtextures);
-                    assert(triangle->tindices[j]>=1 && triangle->tindices[j]<=model->numtexcoords);
-                    glTexCoord2f(model->texcoords[2 * triangle->tindices[j]]*model->textures[map_diffuse].width,model->texcoords[2 * triangle->tindices[j] + 1]*model->textures[map_diffuse].height);
-                }
-                assert(triangle->vindices[j]>=1 && triangle->vindices[j]<=model->numvertices);
-                glVertex3fv(&model->vertices[3 * triangle->vindices[j]]);
+			if (mode & GLM_SMOOTH && (triangle->nindices[j]!=-1)) {
+			    assert(triangle->nindices[j]>=1 && triangle->nindices[j]<=model->numnormals);
+			    glNormal3fv(&model->normals[3 * triangle->nindices[j]]);
+			}
+			if (mode & GLM_TEXTURE && (triangle->tindices[j]!=-1) && map_diffuse != -1) {
+			    assert(map_diffuse >= 0 && map_diffuse < model->numtextures);
+			    assert(triangle->tindices[j]>=1 && triangle->tindices[j]<=model->numtexcoords);
+			    glTexCoord2f(model->texcoords[2 * triangle->tindices[j]]*model->textures[map_diffuse].width,model->texcoords[2 * triangle->tindices[j] + 1]*model->textures[map_diffuse].height);
+			}
+			assert(triangle->vindices[j]>=1 && triangle->vindices[j]<=model->numvertices);
+			glVertex3fv(&model->vertices[3 * triangle->vindices[j]]);
 		    }
 		}
-        
+            
 	    }
 	    glEnd();
         

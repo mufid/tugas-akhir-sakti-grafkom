@@ -1,4 +1,4 @@
-#define _CRT_SECURE_NO_WARNINGS
+
 /* pngtest.c - a simple test program to test libpng
  *
  * Last changed in libpng 1.6.2 [April 25, 2013]

@@ -1,0 +1,12 @@
+# Blender MTL File: 'nemo-keren.blend'
+# Material Count: 1
+
+newmtl UtamaMaterial
+Ns 0.000000
+Ka 0.000000 0.000000 0.000000
+Kd 0.284746 0.284746 0.284746
+Ks 0.389830 0.389830 0.389830
+Ni 1.000000
+d 1.000000
+illum 0
+map_Kd textures\nemo-asli.png

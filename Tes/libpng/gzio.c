@@ -1,5 +1,3 @@
-#define _CRT_SECURE_NO_WARNINGS
-
 /* gzio.c -- IO on .gz files
  * Copyright (C) 1995-2005 Jean-loup Gailly.
  * For conditions of distribution and use, see copyright notice in zlib.h
@@ -8,7 +6,7 @@
  */
 
 /* @(#) $Id$ */
-
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
 #include "zutil.h"

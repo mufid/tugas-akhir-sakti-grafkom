@@ -1,0 +1,12 @@
+# Blender MTL File: 'kubus-tes.blend'
+# Material Count: 1
+
+newmtl Material
+Ns 43.137255
+Ka 0.000000 0.000000 0.000000
+Kd 0.773333 0.773333 0.773333
+Ks 0.840580 0.840580 0.840580
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd D:\\tes.png

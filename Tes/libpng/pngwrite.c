@@ -1,4 +1,3 @@
-#define _CRT_SECURE_NO_WARNINGS
 
 /* pngwrite.c - general routines to write a PNG file
  *
@@ -11,12 +10,12 @@
  * For conditions of distribution and use, see the disclaimer
  * and license in png.h
  */
+#define _CRT_SECURE_NO_WARNINGS
 
 #include "pngpriv.h"
 #if defined(PNG_SIMPLIFIED_WRITE_SUPPORTED) && defined(PNG_STDIO_SUPPORTED)
 #  include <errno.h>
 #endif
-
 #ifdef PNG_WRITE_SUPPORTED
 
 #ifdef PNG_WRITE_UNKNOWN_CHUNKS_SUPPORTED

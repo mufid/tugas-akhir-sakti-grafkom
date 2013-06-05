@@ -12,14 +12,12 @@
       coordinate generation (spheremap and planar projections) + more.
 
  */
-#undef WIN32_LEAN_AND_MEAN 
+
 
 #ifdef __APPLE__
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
 #else
-#undef WIN32_LEAN_AND_MEAN 
-#include <Windows.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 #endif

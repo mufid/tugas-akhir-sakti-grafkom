@@ -198,9 +198,6 @@
     <ClCompile Include="libpng\pngwio.c">
       <Filter>pnglib</Filter>
     </ClCompile>
-    <ClCompile Include="libpng\pngwrite.c">
-      <Filter>pnglib</Filter>
-    </ClCompile>
     <ClCompile Include="libpng\pngwtran.c">
       <Filter>pnglib</Filter>
     </ClCompile>
@@ -263,6 +260,9 @@
     </ClCompile>
     <ClCompile Include="libpng\uncompr.c">
       <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\pngwrite.c">
+      <Filter>pnglib</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

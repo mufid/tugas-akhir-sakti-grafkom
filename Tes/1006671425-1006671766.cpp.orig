@@ -1,5 +1,10 @@
 
 #define GLUT_DISABLE_ATEXIT_HACK
+<<<<<<< HEAD
+#undef WIN32_LEAN_AND_MEAN 
+=======
+#define _CRT_SECURE_NO_DEPRECATE
+>>>>>>> origin/maste-dev
 #include <stdio.h>
 #include <stdlib.h>
 #include <windows.h>
@@ -10,7 +15,9 @@
 #include "GLee\GLee.h"
 #include <GL/glut.h>
 #include "Maths\Maths.h"
-#include "glm.h"
+#include "glm\glm.h"
+#include "model/zudomon.h"
+#include "init.h"
 
 using namespace std;
 
@@ -20,6 +27,9 @@ using namespace std;
 #define FOVY (double) 80.0
 #define ZNEAR (double) 0.6
 #define ZFAR (double) 98.0
+#define DRAGON_SCALE (double) 0.6
+#define SNOW_SCALE (double) 0.6
+#define FPS 33
 
 // Object Dimension Constant
 #define HIP_UPPER 0.8
@@ -48,6 +58,7 @@ using namespace std;
 #define CHEST_HEIGHT 3.2
 #define STOMACH_UPPER 1.7
 #define STOMACH_LOWER 1.2
+
 #define STOMACH_HEIGHT 3.6
 
 #define SHOULDER_UPPER 0.1
@@ -69,7 +80,8 @@ using namespace std;
 #define NECK_HEIGHT 1.1
 
 // Quadric Object
-GLUquadricObj *head, *neck, *body, *rChest, *lChest, *rShoulder, *lShoulder, *rArm, *lArm, *rLeg, *lLeg, *rFeet, *lFeet;
+GLUquadricObj *head, *neck, *body, *rChest, *lChest, *rShoulder, *lShoulder, *rArm, *lArm, *rLeg, *lLeg, *rFeet, *lFeet,
+			  *pine, *snow;
 
 // Light Color
 GLfloat lightD[3][4] = {{0.0, 0.0, 0.8, 1.0}, 
@@ -77,12 +89,12 @@ GLfloat lightD[3][4] = {{0.0, 0.0, 0.8, 1.0},
                         {1.0, 1.0, 1.0, 1.0}};
 
 // Horizontal Light
-GLfloat horizonA[] = {0.0, 0.0, 0.0, 1.0},
+GLfloat horizonA[] = {0.3, 0.3, 0.3, 1.0},
 		horizonD[] = {0.8, 0.0, 0.0, 1.0}, 
 		horizonS[] = {0.6, 0.6, 0.6, 1.0},
-		horizonP[] = {10.0, 3.0, -30.0, 1.0};
+		horizonP[] = {10.0, 3.0, 0.0, 1.0};
 
-// Vertical Light
+// Vertical Lightx
 GLfloat verticA[] = {0.0, 0.0, 0.0, 1.0},
 		verticD[] = {0.8, 0.0, 0.0, 1.0}, 
 		verticS[] = {0.6, 0.6, 0.6, 1.0},
@@ -90,6 +102,11 @@ GLfloat verticA[] = {0.0, 0.0, 0.0, 1.0},
 
 // Materials
 // silver, gold, ruby, emerald
+
+GLfloat whiteA[] = { 0.3, 0.3, 0.3},
+		whiteD[] = { 0.3, 0.3, 0.3},
+		whiteS[] = { 0.3, 0.3, 0.3},
+		whiteShine = 0.4 ;
 
 GLfloat goldA[] = { 0.24725, 0.1995, 0.0745 },
 		goldD[] = { 0.75164, 0.60648, 0.22648 },
@@ -139,15 +156,74 @@ GLfloat rot = 0.0, rotInc = 0.12; // Derajat perputaran model
 bool isSpin = true; // Apakah model perlu berputar?
 
 <<<<<<< HEAD
-// Objek untuk DisplayList
-GLuint sayap_dp;
-GLuint kepala_dp;
-GLuint kaktus_dp;
-
 =======
+// Animation Variables
+bool isAnimate = true; // Apakah model beranimasi?
+double dragV = 0, dragVInc = -0.005;
+int dragStat = 0;
+
+// Texture Variables
+bool showTexture = false;
+GLuint sayap_dp;
+GLuint kaktus_dp;
 >>>>>>> origin/maste-dev
 GLuint shadowMapTexture;
+GLuint dragonTex;
 const int shadowMapSize = 512;
+static GLfloat coef[] = {1.0, 1.0, 1.0, 0.0};
+
+/* memuat dokumen .raw untuk dijadikan texture */
+GLuint LoadTextureRAW(const char * filename, int wrap) {
+    GLuint texture;
+    int width, height;
+    BYTE * data;
+    FILE * file;
+
+    // open texture data
+    file = fopen(filename, "rb");
+    if (file == NULL) return 0;
+
+    // allocate buffer
+    width = 256;
+    height = 256;
+    data = (unsigned char *) malloc(width * height * 3);
+
+    // read texture data
+    fread(data, width * height * 3, 1, file);
+    fclose(file);
+
+    // allocate a texture name
+    glGenTextures(1, &texture);
+
+    // select our current texture
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    // select modulate to mix texture with color for shading
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+    // when texture area is small, bilinear filter the closest MIP map
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+    // when texture area is large, bilinear filter the first MIP map
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // if wrap is true, the texture wraps over at the edges (repeat)
+    //       ... false, the texture ends at the edges (clamp)
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap ? GL_REPEAT : GL_CLAMP);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap ? GL_REPEAT : GL_CLAMP);
+
+    // build our texture MIP maps
+    gluBuild2DMipmaps(GL_TEXTURE_2D, 3, width, height, GL_RGB, GL_UNSIGNED_BYTE, data);
+
+    // free buffer
+    free(data);
+
+    return texture;
+}
+
+void FreeTexture(GLuint texture) {
+    glDeleteTextures(1, &texture);
+}
+
 
 // Init Function
 void init() {
@@ -181,6 +257,10 @@ void init() {
 	gluQuadricDrawStyle(lLeg, GLU_FILL);
 	lFeet = gluNewQuadric();
 	gluQuadricDrawStyle(lFeet, GLU_FILL);
+	pine = gluNewQuadric();
+	gluQuadricDrawStyle(pine, GLU_FILL);
+	snow = gluNewQuadric();
+	gluQuadricDrawStyle(snow, GLU_FILL);
 
     glLightfv(GL_LIGHT1, GL_POSITION, horizonP);
     glLightfv(GL_LIGHT1, GL_AMBIENT, horizonA);
@@ -197,6 +277,9 @@ void init() {
 
     glDepthFunc(GL_LEQUAL);
     glEnable(GL_DEPTH_TEST);
+	
+    dragonTex = LoadTextureRAW("orange.raw", TRUE);
+    if (!dragonTex) printf("Texture File not found !\n");
 
 }
 
@@ -238,6 +321,8 @@ void DrawKepala()
 	glTranslatef(0, -2, 4);
 	glPopMatrix();
 	glTranslatef(0, -2.5, -2);
+	glTranslatef(0, -dragV*2/2, -dragV*1/2);
+	glRotatef(dragV*40/2, 1.0, 0.0, 0.0);
 	//low
 	glRotatef(-30, 0.0, 0.0, -1.0);
 	glRotatef(-130, 1.0, 0.0, 0.0);
@@ -289,7 +374,7 @@ void reshape(int w, int h) {
 void DrawLArm() {
 	glPushMatrix();
 	glTranslatef(-0.2, 0.7 - BICEPT_HEIGHT, BICEPT_HEIGHT - 2.7);
-	glRotatef(jointDegree[4], 1.0, 0.0, 0.0);
+	glRotatef(jointDegree[4]+dragV*60/2+30, 1.0, 0.0, 0.0);
 	glRotatef(0, 0.0, 1.0, 0.0);
 	SOLID_CLOSED_CYLINDER(lArm, ARM_LOWER, ARM_UPPER, ARM_HEIGHT, 10, 10);
 	glRotatef(0, 0.0, 1.0, 0.0);
@@ -308,6 +393,7 @@ void DrawLShoulder() {
 	glPushMatrix();
 	glTranslatef(CHEST_HEIGHT, 0.5, 0.0);
 	glRotatef(jointDegree[2], 1.0, 0.0, 0.0);
+	glRotatef(-dragV*30/2-30, 0.0, 0.0, -1.0);
 	glRotatef(90, 0.0, 1.0, 0.0);
 	glRotatef(-30, 1.0, 0.0, 0.0);
 	SOLID_CLOSED_CYLINDER(lShoulder, SHOULDER_LOWER, SHOULDER_UPPER, SHOULDER_HEIGHT, 10, 10);
@@ -325,7 +411,7 @@ void DrawLShoulder() {
 void DrawRArm() {
 	glPushMatrix();
 	glTranslatef(0.2, 0.7 - BICEPT_HEIGHT, BICEPT_HEIGHT - 2.7);
-	glRotatef(jointDegree[3], 1.0, 0.0, 0.0);
+	glRotatef(jointDegree[3]+dragV*60/2+30, 1.0, 0.0, 0.0);
 	glRotatef(0, 0.0, 1.0, 0.0);
 	SOLID_CLOSED_CYLINDER(rArm, ARM_LOWER, ARM_UPPER, ARM_HEIGHT, 10, 10);
 	glRotatef(0, 0.0, 1.0, 0.0);
@@ -344,6 +430,7 @@ void DrawRShoulder() {
 	glPushMatrix();
 	glTranslatef(-CHEST_HEIGHT, 0.5, 0.0);
 	glRotatef(jointDegree[1], 1.0, 0.0, 0.0);
+	glRotatef(-dragV*30/2-30, 0.0, 0.0, 1.0);
 	glRotatef(-90, 0.0, 1.0, 0.0);
 	glRotatef(-30, 1.0, 0.0, 0.0);
 	SOLID_CLOSED_CYLINDER(rShoulder, SHOULDER_LOWER, SHOULDER_UPPER, SHOULDER_HEIGHT, 10, 10);
@@ -358,7 +445,6 @@ void DrawRShoulder() {
 	glPopMatrix();
 }
 
-// Leher leher
 void DrawNeck() {
 	glPushMatrix();
 	glTranslatef(0.0, 0.6, 0.8);
@@ -401,7 +487,6 @@ void DrawLFeet() {
 	}
 	glPopMatrix();
 }
-
 
 void DrawRFeet() {
 	glTranslatef(-2.8, -1.2, 2.3);	
@@ -495,6 +580,7 @@ void DrawTail() {
 
 void DrawLeftWing() {
 	glPushMatrix();
+	glRotatef(dragV*40/2+30, 0.0, -1.0, 0.0);
 	glTranslatef(1.0, STOMACH_HEIGHT, 0);
 	glRotatef(-30, 0.0, 0.0, 1.0);
 	glRotatef(-130, 1.0, 0.0, 0.0);
@@ -569,6 +655,7 @@ void DrawLeftWing() {
 
 void DrawRightWing() {
 	glPushMatrix();
+	glRotatef(dragV*40/2+30, 0.0, 1.0, 0.0);
 	glTranslatef(-1.0, STOMACH_HEIGHT, 0);
 	glRotatef(-30, 0.0, 0.0, -1.0);
 	glRotatef(-130, 1.0, 0.0, 0.0);
@@ -641,13 +728,13 @@ void DrawRightWing() {
 	glPopMatrix();
 }
 
-void DrawBody(GLfloat initAngle) {
+void DrawBody() {
 	glPushMatrix();
 
 	glTranslatef(0.0, -5.8 -(4), -15.0);
 	
-	glRotatef(rot, 0.0, 1.0, 0.0);
-	//glRotatef(120, 0.0, 1.0, 0.0);
+	//glRotatef(rot, 0.0, 1.0, 0.0);
+	glRotatef(65, 0.0, 1.0, 0.0);
 	glRotatef(-90, 1.0, 0.0, 0.0);
 	SOLID_CLOSED_CYLINDER(body, STOMACH_LOWER, STOMACH_UPPER, STOMACH_HEIGHT, 10, 10);	
 	glRotatef(90, 1.0, 0.0, 0.0);
@@ -665,7 +752,7 @@ void DrawBody(GLfloat initAngle) {
 	DrawRShoulder();
 
 	glPushMatrix();
-	glRotatef(jointDegree[0], 1.0, 0.0, 0.0);
+	glRotatef(jointDegree[0]+dragV*40/2, 1.0, 0.0, 0.0);
     // Ubah ini untuk mengubah normalnya leher
 	glTranslatef(0.0, STOMACH_HEIGHT - 2.4, 0.0); 
 	glRotatef(-70, 1.0, 0.0, 0.0);
@@ -699,7 +786,7 @@ void DrawBody(GLfloat initAngle) {
 	glRotatef(-90, 1.0, 0.0, 0.0);
 	
 	glPushMatrix();
-	glRotatef(jointDegree[6], 1.0, 0.0, 0.0);
+	glRotatef(jointDegree[6]-dragV*80/2-40, 1.0, 0.0, 0.0);
 	glTranslatef(1.2, 0.0, 0.0);
 	glRotatef(90, 0.0, 1.0, 0.0);
 	glRotatef(-30, 1.0, 0.0, 0.0);
@@ -710,7 +797,7 @@ void DrawBody(GLfloat initAngle) {
 	glPopMatrix();
 	
 	glPushMatrix();
-	glRotatef(jointDegree[5], 1.0, 0.0, 0.0);
+	glRotatef(jointDegree[5]-dragV*80/2-40, 1.0, 0.0, 0.0);
 	glTranslatef(-1.2, 0.0, 0.0);
 	glRotatef(-90, 0.0, 1.0, 0.0);
 	glRotatef(-30, 1.0, 0.0, 0.0);
@@ -724,8 +811,7 @@ void DrawBody(GLfloat initAngle) {
 	glPopMatrix();
 }
 
-// Konstruksi Objek
-void displayObject(GLfloat initAngle, GLfloat initX, GLfloat initY, GLfloat initZ) {
+void displayDragonObject(GLfloat initAngle, GLfloat initX, GLfloat initY, GLfloat initZ) {
 	glPushMatrix();
     glTranslatef(initX, initY, initZ);
     switch (currentMaterial)
@@ -749,7 +835,155 @@ void displayObject(GLfloat initAngle, GLfloat initX, GLfloat initY, GLfloat init
 	    glMaterialf(GL_FRONT, GL_SHININESS, goldShine);
         break;
     }
-	DrawBody(initAngle);
+	
+    if (showTexture) {
+    	glMaterialfv(GL_FRONT, GL_SPECULAR, whiteS);
+    	glMaterialfv(GL_FRONT, GL_AMBIENT, whiteA);
+	    glMaterialfv(GL_FRONT, GL_DIFFUSE, whiteD);
+	    glMaterialf(GL_FRONT, GL_SHININESS, whiteShine);
+		glEnable(GL_TEXTURE_2D);
+        glEnable(GL_TEXTURE_GEN_S); // Enable Texture Coord Generation For S ( NEW )
+        glEnable(GL_TEXTURE_GEN_T); // Enable Texture Coord Generation For T ( NEW )
+		glBindTexture(GL_TEXTURE_2D, dragonTex); //binding texture
+    }
+
+	glScalef(DRAGON_SCALE, DRAGON_SCALE+0.05, DRAGON_SCALE);
+	glRotatef(initAngle, 0.0, 0.0, 1.0);
+	DrawBody();
+	glRotatef(initAngle, .0, 0.0, -1.0);
+	glScalef(1/DRAGON_SCALE, 1/DRAGON_SCALE, 1/DRAGON_SCALE);
+	
+    if (showTexture) {
+        glDisable(GL_TEXTURE_GEN_S); // Disable Texture Coord Generation For S ( NEW )
+        glDisable(GL_TEXTURE_GEN_T); // Disable Texture Coord Generation For T ( NEW )
+		glDisable(GL_TEXTURE_2D);
+    }
+	glPopMatrix();
+}
+
+void displayPineObject(GLfloat initAngle, GLfloat initX, GLfloat initY, GLfloat initZ) {
+	glPushMatrix();
+    glTranslatef(initX, initY, initZ);
+    switch (currentMaterial)
+    {
+    case 1:
+    	glMaterialfv(GL_FRONT, GL_SPECULAR, silverS);
+    	glMaterialfv(GL_FRONT, GL_AMBIENT, silverA);
+	    glMaterialfv(GL_FRONT, GL_DIFFUSE, silverD);
+	    glMaterialf(GL_FRONT, GL_SHININESS, silverShine);
+        break;
+    case 2:
+    	glMaterialfv(GL_FRONT, GL_SPECULAR, rubyS);
+    	glMaterialfv(GL_FRONT, GL_AMBIENT, rubyA);
+	    glMaterialfv(GL_FRONT, GL_DIFFUSE, rubyD);
+	    glMaterialf(GL_FRONT, GL_SHININESS, rubyShine);
+        break;
+    case 3:
+    	glMaterialfv(GL_FRONT, GL_SPECULAR, goldS);
+    	glMaterialfv(GL_FRONT, GL_AMBIENT, goldA);
+	    glMaterialfv(GL_FRONT, GL_DIFFUSE, goldD);
+	    glMaterialf(GL_FRONT, GL_SHININESS, goldShine);
+        break;
+    }
+	glTranslatef(0.0, -5.8 -(4), -15.0);
+	glRotatef(-90, 1.0, 0.0, 0.0);
+	SOLID_CLOSED_CYLINDER(pine, 2, 2, 7, 10, 10);	
+	glRotatef(90, 1.0, 0.0, 0.0);
+	glTranslatef(0.0, 4, 0.0);	
+	glRotatef(-90, 1.0, 0.0, 0.0);
+	SOLID_CLOSED_CYLINDER(pine, 8, 2, 4, 10, 10);	
+	glRotatef(90, 1.0, 0.0, 0.0);
+	for(int ii = 0; ii < 4; ++ii) {
+		glTranslatef(0.0, 3, 0.0);	
+		glRotatef(-90, 1.0, 0.0, 0.0);
+		SOLID_CLOSED_CYLINDER(pine, 8 - ii, 2, 4, 10, 10);	
+		glRotatef(90, 1.0, 0.0, 0.0);
+	}
+	glTranslatef(0.0, 3, 0.0);	
+	glRotatef(-90, 1.0, 0.0, 0.0);
+	SOLID_CLOSED_CYLINDER(pine, 4, 0, 4, 10, 10);	
+	glRotatef(90, 1.0, 0.0, 0.0);
+	glPopMatrix();
+}
+
+void displaySnowObject(GLfloat initAngle, GLfloat initX, GLfloat initY, GLfloat initZ) {
+	glPushMatrix();
+    glTranslatef(initX, initY, initZ);
+    switch (currentMaterial)
+    {
+    case 1:
+    	glMaterialfv(GL_FRONT, GL_SPECULAR, silverS);
+    	glMaterialfv(GL_FRONT, GL_AMBIENT, silverA);
+	    glMaterialfv(GL_FRONT, GL_DIFFUSE, silverD);
+	    glMaterialf(GL_FRONT, GL_SHININESS, silverShine);
+        break;
+    case 2:
+    	glMaterialfv(GL_FRONT, GL_SPECULAR, rubyS);
+    	glMaterialfv(GL_FRONT, GL_AMBIENT, rubyA);
+	    glMaterialfv(GL_FRONT, GL_DIFFUSE, rubyD);
+	    glMaterialf(GL_FRONT, GL_SHININESS, rubyShine);
+        break;
+    case 3:
+    	glMaterialfv(GL_FRONT, GL_SPECULAR, goldS);
+    	glMaterialfv(GL_FRONT, GL_AMBIENT, goldA);
+	    glMaterialfv(GL_FRONT, GL_DIFFUSE, goldD);
+	    glMaterialf(GL_FRONT, GL_SHININESS, goldShine);
+        break;
+    }
+    	glMaterialfv(GL_FRONT, GL_SPECULAR, whiteS);
+    	glMaterialfv(GL_FRONT, GL_AMBIENT, whiteA);
+	    glMaterialfv(GL_FRONT, GL_DIFFUSE, whiteD);
+	    glMaterialf(GL_FRONT, GL_SHININESS, whiteShine);
+
+	glTranslatef(0.0, -5.8 -(4), -15.0);
+	glScalef(SNOW_SCALE, SNOW_SCALE, SNOW_SCALE);
+	
+	glRotatef(-30, 0.0, 1.0, .0);
+	gluSphere(snow, 5, 10, 10);	
+	glTranslatef(1.0, 5, .0);
+	gluSphere(snow, 4, 10, 10);	
+	//kanan
+	glPushMatrix();
+	glTranslatef(2.0, 0, .0);
+	glRotatef(100, 0.0, 0.0, 1.0);
+	glRotatef(90, 1.0, 0.0, 0.0);
+	SOLID_CLOSED_CYLINDER(snow, 0.5, 0.5, 7, 10, 10);	
+	glRotatef(-90, 1.0, 0.0, 0.0);
+	glRotatef(-100, 0.0, 0.0, 1.0);
+	glTranslatef(4.7, 0.4, .0);
+	glRotatef(160, 0.0, 0.0, 1.0);
+	glRotatef(90, 1.0, 0.0, 0.0);
+	SOLID_CLOSED_CYLINDER(snow, 0.3, 0.3, 3, 10, 10);	
+	glRotatef(-90, 1.0, 0.0, 0.0);
+	glRotatef(-160, 0.0, 0.0, 1.0);
+	glPopMatrix();
+	//kiri
+	glPushMatrix();
+	glTranslatef(-2.0, 0, .0);
+	glRotatef(130, 0.0, 0.0, -1.0);
+	glRotatef(90, 1.0, 0.0, 0.0);
+	SOLID_CLOSED_CYLINDER(snow, 0.5, 0.5, 6, 10, 10);	
+	glRotatef(-90, 1.0, 0.0, 0.0);
+	glRotatef(-130, 0.0, 0.0, -1.0);
+	glPopMatrix();
+	//
+	glTranslatef(-.2, 3, 0);
+	gluSphere(snow, 3, 10, 10);	
+	glTranslatef(-0.2, 2.7, -.5);
+	glRotatef(10, 0.0, 0.0, 1.0);
+	glRotatef(80, 1.0, 0.0, 0.0);
+	SOLID_CLOSED_CYLINDER(snow, 5, 5, 0.2, 10, 10);	
+	glRotatef(-80, 1.0, 0.0, 0.0);
+	glRotatef(-10, 0.0, 0.0, 1.0);
+	glTranslatef(-.6, 3.8, -.5);
+	glRotatef(10, 0.0, 0.0, 1.0);
+	glRotatef(80, 1.0, 0.0, 0.0);
+	SOLID_CLOSED_CYLINDER(snow, 3, 3, 4, 10, 10);	
+	glRotatef(-80, 1.0, 0.0, 0.0);
+	glRotatef(-10, 0.0, 0.0, 1.0);
+	glTranslatef(0, -6, 2);
+	SOLID_CLOSED_CYLINDER(snow, 1, 0, 5, 10, 10);	
+	glScalef(1/SNOW_SCALE, 1/SNOW_SCALE, 1/SNOW_SCALE);
 	glPopMatrix();
 }
 
@@ -757,25 +991,60 @@ void DrawScene(void) {
     // Menggambar objek utama
     glEnable(GL_LIGHTING);
 	    glPushMatrix();
-	    displayObject(0.0, 0.0, 9.0, -4.0);
+	    displayDragonObject(-10+dragV*20/2, -8.0-dragV*5/2, 8.0+dragV, -2.0);
+		displayPineObject(0.0, 15.0, 1.5, -11.0);
+		displaySnowObject(0.0, 5, 5.5, -4.0);
 	    glPopMatrix();
 
         // Gambar dinding ~
         glPushMatrix();
-        glTranslatef(0.f, -7.f, 0.f);
+        glTranslatef(0.f, -7.f, -10.f);
         glColor3f(.7f, .2f, .4f);
 	    glScalef(1.0f, 0.05f, 1.0f);
 	    glutSolidCube(30.f);
-        glPopMatrix();
+        glPopMatrix(); 
 
         // Gambar kaktus yey
+        glEnable(GL_TEXTURE_2D);
         glPushMatrix();
-            glTranslatef(4.f, 0, 0);
+            glTranslatef(-10.f, -5.f, -10.f);
+            glScalef(2.f,2.f,2.f);
             glCallList(kaktus_dp);
+
+            glLoadIdentity();
+            glTranslatef(10.f, -5.f, -10.f);
+            glScalef(2.f,2.f,2.f);
+            glCallList(kaktus_dp);
+
+            glLoadIdentity();
+            glTranslatef(0.f, -5.f, -10.f);
+            glScalef(2.f,2.f,2.f);
+            glCallList(kaktus_dp);
+
+            glLoadIdentity();
+            gambarNemo(0.f);
+
         glPopMatrix();
 
+        // Zudomon!
+        glPushMatrix();
+            glLoadIdentity();
+            glTranslatef(5.f, 0.f, 0);
+            drawZudomon();
+        glPopMatrix();
 	glDisable(GL_LIGHTING);
 
+}
+
+/* menginisialisi kemunculan texture */
+void showTextures() {
+    // to handle the textures generation and coordinates
+    glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR); // Set The Texture Generation Mode
+    glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR); // Set The Texture Generation Mode
+    glTexGenfv(GL_S, GL_OBJECT_PLANE, coef);
+    glTexGenfv(GL_T, GL_OBJECT_PLANE, coef);
+
+    glEnable(GL_TEXTURE_2D); //enable texture
 }
 
 // Display Function
@@ -797,15 +1066,26 @@ void display(void) {
         glColor3f(0.0, 0.0, 0.0);
     }
 
+<<<<<<< HEAD
     {
         glColor3f(0.85, 0.2, 0.2);
         glTranslatef(0.0, -1.0, -15.0);
         glRotatef(lightDegree, 0.0, 1.0, 0.0);     
-	    if (isHorizon) glLightfv(GL_LIGHT1, GL_POSITION, horizonP);
+	    
         glGetFloatv(GL_MODELVIEW_MATRIX, lightProjectionMatrix1);
         glTranslatef(10.0, 4.0, -15.0);
+        if (isHorizon) glLightfv(GL_LIGHT1, GL_POSITION, horizonP);
         glutSolidSphere(0.3, 10, 10);
     }
+=======
+    glColor3f(0.85, 0.2, 0.2);
+    glTranslatef(0.0, -1.0, -15.0);
+    glRotatef(lightDegree, 0.0, 1.0, 0.0);     
+	if (isHorizon) glLightfv(GL_LIGHT1, GL_POSITION, horizonP);
+    glGetFloatv(GL_MODELVIEW_MATRIX, lightProjectionMatrix1);
+    glTranslatef(10.0, 4.0, -15.0);
+    glutSolidSphere(0.3, 10, 10);
+>>>>>>> origin/maste-dev
     glPopMatrix();
 
 	// Lampu vertikal
@@ -831,7 +1111,15 @@ void display(void) {
 
     DrawScene();
     
-    glDisable(GL_TEXTURE_2D);
+<<<<<<< HEAD
+=======
+    // pengaturan texture
+    if (showTexture) {
+        showTextures();
+    } else {
+        glDisable(GL_TEXTURE_2D);
+    }
+>>>>>>> origin/maste-dev
 	glFlush();
 	glutSwapBuffers();
 }
@@ -868,8 +1156,12 @@ void horizonMenu(int id) {
 // Fungsi pengaturan material
 void materialMenu(int id) 
 {
-    // simple is simple
-    currentMaterial = id + 1;
+	if(id == -1) {
+		showTexture = true;
+	} else {
+		currentMaterial = id + 1;
+		showTexture = false;
+	}
 }
 
 // Fungsi menu pengaturan lampu vertical
@@ -899,37 +1191,22 @@ void mouseClick(int btn, int state, int x, int y) {
 	}
 }
 
-<<<<<<< HEAD
-// DisplayList dipergunakan untuk menggambar sayap yang cukup kompleks
-void initDisplayList()
-{
-    GLMmodel* sayap;
-    GLMmodel* kaktus;
-    sayap = (GLMmodel*)malloc(sizeof(GLMmodel));
-	sayap = glmReadOBJ("sayap.obj");
-	
-	sayap_dp=glGenLists(1);
-	glNewList(sayap_dp,GL_COMPILE);
-		glmList(sayap, GLM_SMOOTH);
-		//glmDraw(sayap, GLM_SMOOTH);
-	glEndList();
-
-    kaktus = (GLMmodel*)malloc(sizeof(GLMmodel));
-	kaktus = glmReadOBJ("kaktus.obj");
-	
-	kaktus_dp=glGenLists(1);
-	glNewList(kaktus_dp,GL_COMPILE);
-        glmList(kaktus, GLM_SMOOTH);
-		//glmList(f16, GLM_SMOOTH);
-		//glmDraw(kaktus, GLM_SMOOTH);
-	glEndList();
 
 
+void frameAnimation(int value) {
+	if(isAnimate) {
+		dragV += dragVInc;
+		if(dragVInc < 0 && dragV < -1.5) {
+			dragVInc = 0.1;
+		} else if(dragVInc == 0.1 && dragV > -0.75) {
+			dragVInc = 0.05;
+		} else if(dragVInc > 0 && dragV > 0) {
+			dragVInc = -0.005;
+		} 
+	}
+	glutTimerFunc(FPS, frameAnimation, 0); 	
 }
 
-
-=======
->>>>>>> origin/maste-dev
 // Main Function
 int main(int argc, char **argv) {
     glutInit(&argc, argv);
@@ -944,6 +1221,8 @@ int main(int argc, char **argv) {
 	glutMouseFunc(mouseClick);
 	glutIdleFunc(animation);
 	
+    initDisplayList();
+
     int animateInt, horizonInt, verticInt, materialInt, spinInt;
 	animateInt = glutCreateMenu(animateMenu);
     glutAddMenuEntry("neck", 0);
@@ -965,6 +1244,7 @@ int main(int argc, char **argv) {
     glutAddMenuEntry("on", 0);
     glutAddMenuEntry("off", 1);
     materialInt = glutCreateMenu(materialMenu);
+    glutAddMenuEntry("Texture", -1);
     glutAddMenuEntry("Standard", 0);
     glutAddMenuEntry("Greymon", 1);
     glutAddMenuEntry("Black Dragon", 2);
@@ -977,7 +1257,7 @@ int main(int argc, char **argv) {
 	glutAddSubMenu("Spin?", spinInt);
     glutAddSubMenu("Material?", materialInt);
 	glutAttachMenu(GLUT_MIDDLE_BUTTON);
-	
+	glutTimerFunc(FPS, frameAnimation, 0); 	
     glutMainLoop();
 
     return 0;

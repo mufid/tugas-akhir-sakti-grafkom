@@ -23,6 +23,7 @@ using namespace std;
 #define ZFAR (double) 98.0
 #define DRAGON_SCALE (double) 0.6
 #define SNOW_SCALE (double) 0.6
+#define FPS 33
 
 // Object Dimension Constant
 #define HIP_UPPER 0.8
@@ -95,6 +96,11 @@ GLfloat verticA[] = {0.0, 0.0, 0.0, 1.0},
 // Materials
 // silver, gold, ruby, emerald
 
+GLfloat whiteA[] = { 0.3, 0.3, 0.3},
+		whiteD[] = { 0.3, 0.3, 0.3},
+		whiteS[] = { 0.3, 0.3, 0.3},
+		whiteShine = 0.4 ;
+
 GLfloat goldA[] = { 0.24725, 0.1995, 0.0745 },
 		goldD[] = { 0.75164, 0.60648, 0.22648 },
 		goldS[] = { 0.628281, 0.555802, 0.366065 },
@@ -142,8 +148,13 @@ double jointInc = 10;
 GLfloat rot = 0.0, rotInc = 0.12; // Derajat perputaran model
 bool isSpin = true; // Apakah model perlu berputar?
 
+// Animation Variables
+bool isAnimate = true; // Apakah model beranimasi?
+double dragV = 0, dragVInc = -0.005;
+int dragStat = 0;
+
 // Texture Variables
-bool showTexture = true;
+bool showTexture = false;
 GLuint sayap_dp;
 GLuint kaktus_dp;
 GLuint shadowMapTexture;
@@ -300,6 +311,8 @@ void DrawKepala()
 	glTranslatef(0, -2, 4);
 	glPopMatrix();
 	glTranslatef(0, -2.5, -2);
+	glTranslatef(0, -dragV*2/2, -dragV*1/2);
+	glRotatef(dragV*40/2, 1.0, 0.0, 0.0);
 	//low
 	glRotatef(-30, 0.0, 0.0, -1.0);
 	glRotatef(-130, 1.0, 0.0, 0.0);
@@ -351,7 +364,7 @@ void reshape(int w, int h) {
 void DrawLArm() {
 	glPushMatrix();
 	glTranslatef(-0.2, 0.7 - BICEPT_HEIGHT, BICEPT_HEIGHT - 2.7);
-	glRotatef(jointDegree[4], 1.0, 0.0, 0.0);
+	glRotatef(jointDegree[4]+dragV*60/2+30, 1.0, 0.0, 0.0);
 	glRotatef(0, 0.0, 1.0, 0.0);
 	SOLID_CLOSED_CYLINDER(lArm, ARM_LOWER, ARM_UPPER, ARM_HEIGHT, 10, 10);
 	glRotatef(0, 0.0, 1.0, 0.0);
@@ -370,6 +383,7 @@ void DrawLShoulder() {
 	glPushMatrix();
 	glTranslatef(CHEST_HEIGHT, 0.5, 0.0);
 	glRotatef(jointDegree[2], 1.0, 0.0, 0.0);
+	glRotatef(-dragV*30/2-30, 0.0, 0.0, -1.0);
 	glRotatef(90, 0.0, 1.0, 0.0);
 	glRotatef(-30, 1.0, 0.0, 0.0);
 	SOLID_CLOSED_CYLINDER(lShoulder, SHOULDER_LOWER, SHOULDER_UPPER, SHOULDER_HEIGHT, 10, 10);
@@ -387,7 +401,7 @@ void DrawLShoulder() {
 void DrawRArm() {
 	glPushMatrix();
 	glTranslatef(0.2, 0.7 - BICEPT_HEIGHT, BICEPT_HEIGHT - 2.7);
-	glRotatef(jointDegree[3], 1.0, 0.0, 0.0);
+	glRotatef(jointDegree[3]+dragV*60/2+30, 1.0, 0.0, 0.0);
 	glRotatef(0, 0.0, 1.0, 0.0);
 	SOLID_CLOSED_CYLINDER(rArm, ARM_LOWER, ARM_UPPER, ARM_HEIGHT, 10, 10);
 	glRotatef(0, 0.0, 1.0, 0.0);
@@ -406,6 +420,7 @@ void DrawRShoulder() {
 	glPushMatrix();
 	glTranslatef(-CHEST_HEIGHT, 0.5, 0.0);
 	glRotatef(jointDegree[1], 1.0, 0.0, 0.0);
+	glRotatef(-dragV*30/2-30, 0.0, 0.0, 1.0);
 	glRotatef(-90, 0.0, 1.0, 0.0);
 	glRotatef(-30, 1.0, 0.0, 0.0);
 	SOLID_CLOSED_CYLINDER(rShoulder, SHOULDER_LOWER, SHOULDER_UPPER, SHOULDER_HEIGHT, 10, 10);
@@ -555,6 +570,7 @@ void DrawTail() {
 
 void DrawLeftWing() {
 	glPushMatrix();
+	glRotatef(dragV*40/2+30, 0.0, -1.0, 0.0);
 	glTranslatef(1.0, STOMACH_HEIGHT, 0);
 	glRotatef(-30, 0.0, 0.0, 1.0);
 	glRotatef(-130, 1.0, 0.0, 0.0);
@@ -629,6 +645,7 @@ void DrawLeftWing() {
 
 void DrawRightWing() {
 	glPushMatrix();
+	glRotatef(dragV*40/2+30, 0.0, 1.0, 0.0);
 	glTranslatef(-1.0, STOMACH_HEIGHT, 0);
 	glRotatef(-30, 0.0, 0.0, -1.0);
 	glRotatef(-130, 1.0, 0.0, 0.0);
@@ -701,7 +718,7 @@ void DrawRightWing() {
 	glPopMatrix();
 }
 
-void DrawBody(GLfloat initAngle) {
+void DrawBody() {
 	glPushMatrix();
 
 	glTranslatef(0.0, -5.8 -(4), -15.0);
@@ -725,7 +742,7 @@ void DrawBody(GLfloat initAngle) {
 	DrawRShoulder();
 
 	glPushMatrix();
-	glRotatef(jointDegree[0], 1.0, 0.0, 0.0);
+	glRotatef(jointDegree[0]+dragV*40/2, 1.0, 0.0, 0.0);
     // Ubah ini untuk mengubah normalnya leher
 	glTranslatef(0.0, STOMACH_HEIGHT - 2.4, 0.0); 
 	glRotatef(-70, 1.0, 0.0, 0.0);
@@ -759,7 +776,7 @@ void DrawBody(GLfloat initAngle) {
 	glRotatef(-90, 1.0, 0.0, 0.0);
 	
 	glPushMatrix();
-	glRotatef(jointDegree[6], 1.0, 0.0, 0.0);
+	glRotatef(jointDegree[6]-dragV*80/2-40, 1.0, 0.0, 0.0);
 	glTranslatef(1.2, 0.0, 0.0);
 	glRotatef(90, 0.0, 1.0, 0.0);
 	glRotatef(-30, 1.0, 0.0, 0.0);
@@ -770,7 +787,7 @@ void DrawBody(GLfloat initAngle) {
 	glPopMatrix();
 	
 	glPushMatrix();
-	glRotatef(jointDegree[5], 1.0, 0.0, 0.0);
+	glRotatef(jointDegree[5]-dragV*80/2-40, 1.0, 0.0, 0.0);
 	glTranslatef(-1.2, 0.0, 0.0);
 	glRotatef(-90, 0.0, 1.0, 0.0);
 	glRotatef(-30, 1.0, 0.0, 0.0);
@@ -810,18 +827,26 @@ void displayDragonObject(GLfloat initAngle, GLfloat initX, GLfloat initY, GLfloa
     }
 	
     if (showTexture) {
+    	glMaterialfv(GL_FRONT, GL_SPECULAR, whiteS);
+    	glMaterialfv(GL_FRONT, GL_AMBIENT, whiteA);
+	    glMaterialfv(GL_FRONT, GL_DIFFUSE, whiteD);
+	    glMaterialf(GL_FRONT, GL_SHININESS, whiteShine);
+		glEnable(GL_TEXTURE_2D);
         glEnable(GL_TEXTURE_GEN_S); // Enable Texture Coord Generation For S ( NEW )
         glEnable(GL_TEXTURE_GEN_T); // Enable Texture Coord Generation For T ( NEW )
 		glBindTexture(GL_TEXTURE_2D, dragonTex); //binding texture
     }
 
 	glScalef(DRAGON_SCALE, DRAGON_SCALE+0.05, DRAGON_SCALE);
-	DrawBody(initAngle);
+	glRotatef(initAngle, 0.0, 0.0, 1.0);
+	DrawBody();
+	glRotatef(initAngle, .0, 0.0, -1.0);
 	glScalef(1/DRAGON_SCALE, 1/DRAGON_SCALE, 1/DRAGON_SCALE);
 	
     if (showTexture) {
         glDisable(GL_TEXTURE_GEN_S); // Disable Texture Coord Generation For S ( NEW )
         glDisable(GL_TEXTURE_GEN_T); // Disable Texture Coord Generation For T ( NEW )
+		glDisable(GL_TEXTURE_2D);
     }
 	glPopMatrix();
 }
@@ -895,6 +920,11 @@ void displaySnowObject(GLfloat initAngle, GLfloat initX, GLfloat initY, GLfloat 
 	    glMaterialf(GL_FRONT, GL_SHININESS, goldShine);
         break;
     }
+    	glMaterialfv(GL_FRONT, GL_SPECULAR, whiteS);
+    	glMaterialfv(GL_FRONT, GL_AMBIENT, whiteA);
+	    glMaterialfv(GL_FRONT, GL_DIFFUSE, whiteD);
+	    glMaterialf(GL_FRONT, GL_SHININESS, whiteShine);
+
 	glTranslatef(0.0, -5.8 -(4), -15.0);
 	glScalef(SNOW_SCALE, SNOW_SCALE, SNOW_SCALE);
 	
@@ -951,7 +981,7 @@ void DrawScene(void) {
     // Menggambar objek utama
     glEnable(GL_LIGHTING);
 	    glPushMatrix();
-	    displayDragonObject(5.0, -8.0, 8.0, -2.0);
+	    displayDragonObject(-10+dragV*20/2, -8.0-dragV*5/2, 8.0+dragV, -2.0);
 		displayPineObject(0.0, 15.0, 1.5, -11.0);
 		displaySnowObject(0.0, 5, 5.5, -4.0);
 	    glPopMatrix();
@@ -1078,8 +1108,12 @@ void horizonMenu(int id) {
 // Fungsi pengaturan material
 void materialMenu(int id) 
 {
-    // simple is simple
-    currentMaterial = id + 1;
+	if(id == -1) {
+		showTexture = true;
+	} else {
+		currentMaterial = id + 1;
+		showTexture = false;
+	}
 }
 
 // Fungsi menu pengaturan lampu vertical
@@ -1136,6 +1170,19 @@ void initDisplayList()
 
 }
 
+void frameAnimation(int value) {
+	if(isAnimate) {
+		dragV += dragVInc;
+		if(dragVInc < 0 && dragV < -1.5) {
+			dragVInc = 0.1;
+		} else if(dragVInc == 0.1 && dragV > -0.75) {
+			dragVInc = 0.05;
+		} else if(dragVInc > 0 && dragV > 0) {
+			dragVInc = -0.005;
+		} 
+	}
+	glutTimerFunc(FPS, frameAnimation, 0); 	
+}
 
 // Main Function
 int main(int argc, char **argv) {
@@ -1174,6 +1221,7 @@ int main(int argc, char **argv) {
     glutAddMenuEntry("on", 0);
     glutAddMenuEntry("off", 1);
     materialInt = glutCreateMenu(materialMenu);
+    glutAddMenuEntry("Texture", -1);
     glutAddMenuEntry("Standard", 0);
     glutAddMenuEntry("Greymon", 1);
     glutAddMenuEntry("Black Dragon", 2);
@@ -1186,7 +1234,7 @@ int main(int argc, char **argv) {
 	glutAddSubMenu("Spin?", spinInt);
     glutAddSubMenu("Material?", materialInt);
 	glutAttachMenu(GLUT_MIDDLE_BUTTON);
-	
+	glutTimerFunc(FPS, frameAnimation, 0); 	
     glutMainLoop();
 
     return 0;

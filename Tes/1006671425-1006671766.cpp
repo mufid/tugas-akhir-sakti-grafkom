@@ -986,12 +986,19 @@ void DrawScene(void) {
 		displaySnowObject(0.0, 5, 5.5, -4.0);
 	    glPopMatrix();
 
-        // Gambar dinding ~
+        // Dinding bawah
         glPushMatrix();
         glTranslatef(0.f, -7.f, -10.f);
         glColor3f(.7f, .2f, .4f);
 	    glScalef(1.0f, 0.05f, 1.0f);
 	    glutSolidCube(30.f);
+        glPopMatrix();
+		// Dinding belakang
+        glPushMatrix();
+        glTranslatef(0.f, 0.f, -30.f);
+        glColor3f(.7f, .2f, .4f);
+	    glScalef(30.0f, 30.f, 1.0f);
+	    glutSolidCube(1.f);
         glPopMatrix();
 
         // Gambar kaktus yey
@@ -1066,6 +1073,10 @@ void display(void) {
 
     DrawScene();
     
+	// SPARTA SHADOW
+
+	glShadowProjection(lamp1_position, floorPoint, floorNormal);
+
     // pengaturan texture
     if (showTexture) {
         showTextures();

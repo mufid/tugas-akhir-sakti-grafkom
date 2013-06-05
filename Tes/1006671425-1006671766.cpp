@@ -1,5 +1,6 @@
 
 #define GLUT_DISABLE_ATEXIT_HACK
+#define _CRT_SECURE_NO_DEPRECATE
 #include <stdio.h>
 #include <stdlib.h>
 #include <windows.h>
@@ -20,6 +21,8 @@ using namespace std;
 #define FOVY (double) 80.0
 #define ZNEAR (double) 0.6
 #define ZFAR (double) 98.0
+#define DRAGON_SCALE (double) 0.6
+#define SNOW_SCALE (double) 0.6
 
 // Object Dimension Constant
 #define HIP_UPPER 0.8
@@ -69,7 +72,8 @@ using namespace std;
 #define NECK_HEIGHT 1.1
 
 // Quadric Object
-GLUquadricObj *head, *neck, *body, *rChest, *lChest, *rShoulder, *lShoulder, *rArm, *lArm, *rLeg, *lLeg, *rFeet, *lFeet;
+GLUquadricObj *head, *neck, *body, *rChest, *lChest, *rShoulder, *lShoulder, *rArm, *lArm, *rLeg, *lLeg, *rFeet, *lFeet,
+			  *pine, *snow;
 
 // Light Color
 GLfloat lightD[3][4] = {{0.0, 0.0, 0.8, 1.0}, 
@@ -82,7 +86,7 @@ GLfloat horizonA[] = {0.0, 0.0, 0.0, 1.0},
 		horizonS[] = {0.6, 0.6, 0.6, 1.0},
 		horizonP[] = {10.0, 3.0, -30.0, 1.0};
 
-// Vertical Light
+// Vertical Lightx
 GLfloat verticA[] = {0.0, 0.0, 0.0, 1.0},
 		verticD[] = {0.8, 0.0, 0.0, 1.0}, 
 		verticS[] = {0.6, 0.6, 0.6, 1.0},
@@ -138,10 +142,67 @@ double jointInc = 10;
 GLfloat rot = 0.0, rotInc = 0.12; // Derajat perputaran model
 bool isSpin = true; // Apakah model perlu berputar?
 
+// Texture Variables
+bool showTexture = true;
 GLuint sayap_dp;
 GLuint kaktus_dp;
 GLuint shadowMapTexture;
+GLuint dragonTex;
 const int shadowMapSize = 512;
+static GLfloat coef[] = {1.0, 1.0, 1.0, 0.0};
+
+/* memuat dokumen .raw untuk dijadikan texture */
+GLuint LoadTextureRAW(const char * filename, int wrap) {
+    GLuint texture;
+    int width, height;
+    BYTE * data;
+    FILE * file;
+
+    // open texture data
+    file = fopen(filename, "rb");
+    if (file == NULL) return 0;
+
+    // allocate buffer
+    width = 256;
+    height = 256;
+    data = (unsigned char *) malloc(width * height * 3);
+
+    // read texture data
+    fread(data, width * height * 3, 1, file);
+    fclose(file);
+
+    // allocate a texture name
+    glGenTextures(1, &texture);
+
+    // select our current texture
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    // select modulate to mix texture with color for shading
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+    // when texture area is small, bilinear filter the closest MIP map
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+    // when texture area is large, bilinear filter the first MIP map
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // if wrap is true, the texture wraps over at the edges (repeat)
+    //       ... false, the texture ends at the edges (clamp)
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap ? GL_REPEAT : GL_CLAMP);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap ? GL_REPEAT : GL_CLAMP);
+
+    // build our texture MIP maps
+    gluBuild2DMipmaps(GL_TEXTURE_2D, 3, width, height, GL_RGB, GL_UNSIGNED_BYTE, data);
+
+    // free buffer
+    free(data);
+
+    return texture;
+}
+
+void FreeTexture(GLuint texture) {
+    glDeleteTextures(1, &texture);
+}
+
 
 // Init Function
 void init() {
@@ -175,6 +236,10 @@ void init() {
 	gluQuadricDrawStyle(lLeg, GLU_FILL);
 	lFeet = gluNewQuadric();
 	gluQuadricDrawStyle(lFeet, GLU_FILL);
+	pine = gluNewQuadric();
+	gluQuadricDrawStyle(pine, GLU_FILL);
+	snow = gluNewQuadric();
+	gluQuadricDrawStyle(snow, GLU_FILL);
 
     glLightfv(GL_LIGHT1, GL_POSITION, horizonP);
     glLightfv(GL_LIGHT1, GL_AMBIENT, horizonA);
@@ -191,6 +256,9 @@ void init() {
 
     glDepthFunc(GL_LEQUAL);
     glEnable(GL_DEPTH_TEST);
+	
+    dragonTex = LoadTextureRAW("orange.raw", TRUE);
+    if (!dragonTex) printf("Texture File not found !\n");
 
 }
 
@@ -352,7 +420,6 @@ void DrawRShoulder() {
 	glPopMatrix();
 }
 
-// Leher leher
 void DrawNeck() {
 	glPushMatrix();
 	glTranslatef(0.0, 0.6, 0.8);
@@ -395,7 +462,6 @@ void DrawLFeet() {
 	}
 	glPopMatrix();
 }
-
 
 void DrawRFeet() {
 	glTranslatef(-2.8, -1.2, 2.3);	
@@ -640,8 +706,8 @@ void DrawBody(GLfloat initAngle) {
 
 	glTranslatef(0.0, -5.8 -(4), -15.0);
 	
-	glRotatef(rot, 0.0, 1.0, 0.0);
-	//glRotatef(120, 0.0, 1.0, 0.0);
+	//glRotatef(rot, 0.0, 1.0, 0.0);
+	glRotatef(65, 0.0, 1.0, 0.0);
 	glRotatef(-90, 1.0, 0.0, 0.0);
 	SOLID_CLOSED_CYLINDER(body, STOMACH_LOWER, STOMACH_UPPER, STOMACH_HEIGHT, 10, 10);	
 	glRotatef(90, 1.0, 0.0, 0.0);
@@ -718,8 +784,7 @@ void DrawBody(GLfloat initAngle) {
 	glPopMatrix();
 }
 
-// Konstruksi Objek
-void displayObject(GLfloat initAngle, GLfloat initX, GLfloat initY, GLfloat initZ) {
+void displayDragonObject(GLfloat initAngle, GLfloat initX, GLfloat initY, GLfloat initZ) {
 	glPushMatrix();
     glTranslatef(initX, initY, initZ);
     switch (currentMaterial)
@@ -743,7 +808,142 @@ void displayObject(GLfloat initAngle, GLfloat initX, GLfloat initY, GLfloat init
 	    glMaterialf(GL_FRONT, GL_SHININESS, goldShine);
         break;
     }
+	
+    if (showTexture) {
+        glEnable(GL_TEXTURE_GEN_S); // Enable Texture Coord Generation For S ( NEW )
+        glEnable(GL_TEXTURE_GEN_T); // Enable Texture Coord Generation For T ( NEW )
+		glBindTexture(GL_TEXTURE_2D, dragonTex); //binding texture
+    }
+
+	glScalef(DRAGON_SCALE, DRAGON_SCALE+0.05, DRAGON_SCALE);
 	DrawBody(initAngle);
+	glScalef(1/DRAGON_SCALE, 1/DRAGON_SCALE, 1/DRAGON_SCALE);
+	
+    if (showTexture) {
+        glDisable(GL_TEXTURE_GEN_S); // Disable Texture Coord Generation For S ( NEW )
+        glDisable(GL_TEXTURE_GEN_T); // Disable Texture Coord Generation For T ( NEW )
+    }
+	glPopMatrix();
+}
+
+void displayPineObject(GLfloat initAngle, GLfloat initX, GLfloat initY, GLfloat initZ) {
+	glPushMatrix();
+    glTranslatef(initX, initY, initZ);
+    switch (currentMaterial)
+    {
+    case 1:
+    	glMaterialfv(GL_FRONT, GL_SPECULAR, silverS);
+    	glMaterialfv(GL_FRONT, GL_AMBIENT, silverA);
+	    glMaterialfv(GL_FRONT, GL_DIFFUSE, silverD);
+	    glMaterialf(GL_FRONT, GL_SHININESS, silverShine);
+        break;
+    case 2:
+    	glMaterialfv(GL_FRONT, GL_SPECULAR, rubyS);
+    	glMaterialfv(GL_FRONT, GL_AMBIENT, rubyA);
+	    glMaterialfv(GL_FRONT, GL_DIFFUSE, rubyD);
+	    glMaterialf(GL_FRONT, GL_SHININESS, rubyShine);
+        break;
+    case 3:
+    	glMaterialfv(GL_FRONT, GL_SPECULAR, goldS);
+    	glMaterialfv(GL_FRONT, GL_AMBIENT, goldA);
+	    glMaterialfv(GL_FRONT, GL_DIFFUSE, goldD);
+	    glMaterialf(GL_FRONT, GL_SHININESS, goldShine);
+        break;
+    }
+	glTranslatef(0.0, -5.8 -(4), -15.0);
+	glRotatef(-90, 1.0, 0.0, 0.0);
+	SOLID_CLOSED_CYLINDER(pine, 2, 2, 7, 10, 10);	
+	glRotatef(90, 1.0, 0.0, 0.0);
+	glTranslatef(0.0, 4, 0.0);	
+	glRotatef(-90, 1.0, 0.0, 0.0);
+	SOLID_CLOSED_CYLINDER(pine, 8, 2, 4, 10, 10);	
+	glRotatef(90, 1.0, 0.0, 0.0);
+	for(int ii = 0; ii < 4; ++ii) {
+		glTranslatef(0.0, 3, 0.0);	
+		glRotatef(-90, 1.0, 0.0, 0.0);
+		SOLID_CLOSED_CYLINDER(pine, 8 - ii, 2, 4, 10, 10);	
+		glRotatef(90, 1.0, 0.0, 0.0);
+	}
+	glTranslatef(0.0, 3, 0.0);	
+	glRotatef(-90, 1.0, 0.0, 0.0);
+	SOLID_CLOSED_CYLINDER(pine, 4, 0, 4, 10, 10);	
+	glRotatef(90, 1.0, 0.0, 0.0);
+	glPopMatrix();
+}
+
+void displaySnowObject(GLfloat initAngle, GLfloat initX, GLfloat initY, GLfloat initZ) {
+	glPushMatrix();
+    glTranslatef(initX, initY, initZ);
+    switch (currentMaterial)
+    {
+    case 1:
+    	glMaterialfv(GL_FRONT, GL_SPECULAR, silverS);
+    	glMaterialfv(GL_FRONT, GL_AMBIENT, silverA);
+	    glMaterialfv(GL_FRONT, GL_DIFFUSE, silverD);
+	    glMaterialf(GL_FRONT, GL_SHININESS, silverShine);
+        break;
+    case 2:
+    	glMaterialfv(GL_FRONT, GL_SPECULAR, rubyS);
+    	glMaterialfv(GL_FRONT, GL_AMBIENT, rubyA);
+	    glMaterialfv(GL_FRONT, GL_DIFFUSE, rubyD);
+	    glMaterialf(GL_FRONT, GL_SHININESS, rubyShine);
+        break;
+    case 3:
+    	glMaterialfv(GL_FRONT, GL_SPECULAR, goldS);
+    	glMaterialfv(GL_FRONT, GL_AMBIENT, goldA);
+	    glMaterialfv(GL_FRONT, GL_DIFFUSE, goldD);
+	    glMaterialf(GL_FRONT, GL_SHININESS, goldShine);
+        break;
+    }
+	glTranslatef(0.0, -5.8 -(4), -15.0);
+	glScalef(SNOW_SCALE, SNOW_SCALE, SNOW_SCALE);
+	
+	glRotatef(-30, 0.0, 1.0, .0);
+	gluSphere(snow, 5, 10, 10);	
+	glTranslatef(1.0, 5, .0);
+	gluSphere(snow, 4, 10, 10);	
+	//kanan
+	glPushMatrix();
+	glTranslatef(2.0, 0, .0);
+	glRotatef(100, 0.0, 0.0, 1.0);
+	glRotatef(90, 1.0, 0.0, 0.0);
+	SOLID_CLOSED_CYLINDER(snow, 0.5, 0.5, 7, 10, 10);	
+	glRotatef(-90, 1.0, 0.0, 0.0);
+	glRotatef(-100, 0.0, 0.0, 1.0);
+	glTranslatef(4.7, 0.4, .0);
+	glRotatef(160, 0.0, 0.0, 1.0);
+	glRotatef(90, 1.0, 0.0, 0.0);
+	SOLID_CLOSED_CYLINDER(snow, 0.3, 0.3, 3, 10, 10);	
+	glRotatef(-90, 1.0, 0.0, 0.0);
+	glRotatef(-160, 0.0, 0.0, 1.0);
+	glPopMatrix();
+	//kiri
+	glPushMatrix();
+	glTranslatef(-2.0, 0, .0);
+	glRotatef(130, 0.0, 0.0, -1.0);
+	glRotatef(90, 1.0, 0.0, 0.0);
+	SOLID_CLOSED_CYLINDER(snow, 0.5, 0.5, 6, 10, 10);	
+	glRotatef(-90, 1.0, 0.0, 0.0);
+	glRotatef(-130, 0.0, 0.0, -1.0);
+	glPopMatrix();
+	//
+	glTranslatef(-.2, 3, 0);
+	gluSphere(snow, 3, 10, 10);	
+	glTranslatef(-0.2, 2.7, -.5);
+	glRotatef(10, 0.0, 0.0, 1.0);
+	glRotatef(80, 1.0, 0.0, 0.0);
+	SOLID_CLOSED_CYLINDER(snow, 5, 5, 0.2, 10, 10);	
+	glRotatef(-80, 1.0, 0.0, 0.0);
+	glRotatef(-10, 0.0, 0.0, 1.0);
+	glTranslatef(-.6, 3.8, -.5);
+	glRotatef(10, 0.0, 0.0, 1.0);
+	glRotatef(80, 1.0, 0.0, 0.0);
+	SOLID_CLOSED_CYLINDER(snow, 3, 3, 4, 10, 10);	
+	glRotatef(-80, 1.0, 0.0, 0.0);
+	glRotatef(-10, 0.0, 0.0, 1.0);
+	glTranslatef(0, -6, 2);
+	SOLID_CLOSED_CYLINDER(snow, 1, 0, 5, 10, 10);	
+	glScalef(1/SNOW_SCALE, 1/SNOW_SCALE, 1/SNOW_SCALE);
 	glPopMatrix();
 }
 
@@ -751,12 +951,14 @@ void DrawScene(void) {
     // Menggambar objek utama
     glEnable(GL_LIGHTING);
 	    glPushMatrix();
-	    displayObject(0.0, 0.0, 9.0, -4.0);
+	    displayDragonObject(5.0, -8.0, 8.0, -2.0);
+		displayPineObject(0.0, 15.0, 1.5, -11.0);
+		displaySnowObject(0.0, 5, 5.5, -4.0);
 	    glPopMatrix();
 
         // Gambar dinding ~
         glPushMatrix();
-        glTranslatef(0.f, -7.f, 0.f);
+        glTranslatef(0.f, -7.f, -10.f);
         glColor3f(.7f, .2f, .4f);
 	    glScalef(1.0f, 0.05f, 1.0f);
 	    glutSolidCube(30.f);
@@ -770,6 +972,17 @@ void DrawScene(void) {
 
 	glDisable(GL_LIGHTING);
 
+}
+
+/* menginisialisi kemunculan texture */
+void showTextures() {
+    // to handle the textures generation and coordinates
+    glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR); // Set The Texture Generation Mode
+    glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR); // Set The Texture Generation Mode
+    glTexGenfv(GL_S, GL_OBJECT_PLANE, coef);
+    glTexGenfv(GL_T, GL_OBJECT_PLANE, coef);
+
+    glEnable(GL_TEXTURE_2D); //enable texture
 }
 
 // Display Function
@@ -791,15 +1004,13 @@ void display(void) {
         glColor3f(0.0, 0.0, 0.0);
     }
 
-    {
-        glColor3f(0.85, 0.2, 0.2);
-        glTranslatef(0.0, -1.0, -15.0);
-        glRotatef(lightDegree, 0.0, 1.0, 0.0);     
-	    if (isHorizon) glLightfv(GL_LIGHT1, GL_POSITION, horizonP);
-        glGetFloatv(GL_MODELVIEW_MATRIX, lightProjectionMatrix1);
-        glTranslatef(10.0, 4.0, -15.0);
-        glutSolidSphere(0.3, 10, 10);
-    }
+    glColor3f(0.85, 0.2, 0.2);
+    glTranslatef(0.0, -1.0, -15.0);
+    glRotatef(lightDegree, 0.0, 1.0, 0.0);     
+	if (isHorizon) glLightfv(GL_LIGHT1, GL_POSITION, horizonP);
+    glGetFloatv(GL_MODELVIEW_MATRIX, lightProjectionMatrix1);
+    glTranslatef(10.0, 4.0, -15.0);
+    glutSolidSphere(0.3, 10, 10);
     glPopMatrix();
 
 	// Lampu vertikal
@@ -825,7 +1036,12 @@ void display(void) {
 
     DrawScene();
     
-    glDisable(GL_TEXTURE_2D);
+    // pengaturan texture
+    if (showTexture) {
+        showTextures();
+    } else {
+        glDisable(GL_TEXTURE_2D);
+    }
 	glFlush();
 	glutSwapBuffers();
 }

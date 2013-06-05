@@ -1,6 +1,20 @@
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+/*
+ * Adapted from F. Devernay's extensions to Nate Robbins' GLM library
+ *
+ * Source obtained from GLM-0.3.1 available from http://devernay.free.fr/hacks/glm/
+ *
+ * Changes:
+ *     [mwalter, May 23, 2011]: Simplified to support use of PPM, JPEG (via LIBJPEG),
+ *                              and PNG (via LIBPNG)
+ *
+ *
+ */
+#define _CRT_SECURE_NO_WARNINGS
+ 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
@@ -17,13 +31,13 @@
 char *
 __glmStrdup(const char *string)
 {
-  char *copy;
-
-  copy = (char*) malloc(strlen(string) + 1);
-  if (copy == NULL)
-    return NULL;
-  strcpy(copy, string);
-  return copy;
+    char *copy;
+    
+    copy = (char*) malloc(strlen(string) + 1);
+    if (copy == NULL)
+        return NULL;
+    strcpy(copy, string);
+    return copy;
 }
 #endif
 
@@ -38,7 +52,7 @@ __glmStrStrip(const char *s)
     int len;
     int i;
     char * rets;
-
+    
     i=0;
     while(i <= last &&
           (s[i]==' ' || s[i]=='\t' || s[i]=='\n' || s[i]=='\r'))
@@ -61,50 +75,50 @@ __glmStrStrip(const char *s)
 void
 __glmWarning(char *format,...)
 {
-  va_list args;
-
-  va_start(args, format);
-  fprintf(stderr, "GLM: Warning: ");
-  vfprintf(stderr, format, args);
-  va_end(args);
-  putc('\n', stderr);
+    va_list args;
+    
+    va_start(args, format);
+    fprintf(stderr, "GLM: Warning: ");
+    vfprintf(stderr, format, args);
+    va_end(args);
+    putc('\n', stderr);
 }
 
 /* CENTRY */
 void
 __glmReportErrors(void)
 {
-  GLenum error;
-
-  while ((error = glGetError()) != GL_NO_ERROR)
-    __glmWarning("GL error: %s", gluErrorString(error));
+    GLenum error;
+    
+    while ((error = glGetError()) != GL_NO_ERROR)
+        __glmWarning("GL error: %s", gluErrorString(error));
 }
 /* ENDCENTRY */
 
 void
 __glmFatalError(char *format,...)
 {
-  va_list args;
-
-  va_start(args, format);
-  fprintf(stderr, "GLM: Fatal Error: ");
-  vfprintf(stderr, format, args);
-  va_end(args);
-  putc('\n', stderr);
-  exit(1);
+    va_list args;
+    
+    va_start(args, format);
+    fprintf(stderr, "GLM: Fatal Error: ");
+    vfprintf(stderr, format, args);
+    va_end(args);
+    putc('\n', stderr);
+    exit(1);
 }
 
 void
 __glmFatalUsage(char *format,...)
 {
-  va_list args;
-
-  va_start(args, format);
-  fprintf(stderr, "GLM: Fatal API Usage: ");
-  vfprintf(stderr, format, args);
-  va_end(args);
-  putc('\n', stderr);
-  abort();
+    va_list args;
+    
+    va_start(args, format);
+    fprintf(stderr, "GLM: Fatal API Usage: ");
+    vfprintf(stderr, format, args);
+    va_end(args);
+    putc('\n', stderr);
+    abort();
 }
 
 /* glmDirName: return the directory given a path

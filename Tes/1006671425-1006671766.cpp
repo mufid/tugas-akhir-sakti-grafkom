@@ -1100,7 +1100,7 @@ void display(void) {
     
 	// SPARTA SHADOW
 
-	glShadowProjection(lamp1_position, floorPoint, floorNormal);
+	//glShadowProjection(lamp1_position, floorPoint, floorNormal);
 
     // pengaturan texture
     if (showTexture) {

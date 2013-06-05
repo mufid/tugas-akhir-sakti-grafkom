@@ -10,7 +10,8 @@
 #include "GLee\GLee.h"
 #include <GL/glut.h>
 #include "Maths\Maths.h"
-#include "glm.h"
+#include "glm\glm.h"
+#include "model/zudomon.h"
 
 using namespace std;
 
@@ -140,6 +141,7 @@ bool isSpin = true; // Apakah model perlu berputar?
 
 GLuint sayap_dp;
 GLuint kaktus_dp;
+GLuint tes_dp;
 GLuint shadowMapTexture;
 const int shadowMapSize = 512;
 
@@ -760,14 +762,32 @@ void DrawScene(void) {
         glColor3f(.7f, .2f, .4f);
 	    glScalef(1.0f, 0.05f, 1.0f);
 	    glutSolidCube(30.f);
-        glPopMatrix();
+        glPopMatrix(); 
 
         // Gambar kaktus yey
         glPushMatrix();
-            glTranslatef(4.f, 0, 0);
+            glTranslatef(-10.f, -5.f, -10.f);
+            glScalef(2.f,2.f,2.f);
             glCallList(kaktus_dp);
+
+            glLoadIdentity();
+            glTranslatef(10.f, -5.f, -10.f);
+            glScalef(2.f,2.f,2.f);
+            glCallList(kaktus_dp);
+
+            glLoadIdentity();
+            glTranslatef(0.f, -5.f, -10.f);
+            glScalef(2.f,2.f,2.f);
+            glCallList(kaktus_dp);
+
         glPopMatrix();
 
+        // Zudomon!
+        glPushMatrix();
+            glLoadIdentity();
+            glTranslatef(5.f, 0.f, 0);
+            drawZudomon();
+        glPopMatrix();
 	glDisable(GL_LIGHTING);
 
 }
@@ -896,9 +916,19 @@ void mouseClick(int btn, int state, int x, int y) {
 // DisplayList dipergunakan untuk menggambar sayap yang cukup kompleks
 void initDisplayList()
 {
+    GLMmodel* kaktus;
+
+    kaktus = (GLMmodel*)malloc(sizeof(GLMmodel));
+	kaktus = glmReadOBJ("kaktus.obj");
+	
+	kaktus_dp=glGenLists(1);
+	glNewList(kaktus_dp,GL_COMPILE);
+        glmDraw(kaktus, GLM_SMOOTH | GLM_MATERIAL | GLM_TEXTURE | GLM_COLOR);
+		//glmDraw(kaktus, GLM_SMOOTH);
+	glEndList();
+
 	return;
     GLMmodel* sayap;
-    GLMmodel* kaktus;
     sayap = (GLMmodel*)malloc(sizeof(GLMmodel));
 	sayap = glmReadOBJ("sayap.obj");
 	
@@ -907,17 +937,6 @@ void initDisplayList()
 		glmList(sayap, GLM_SMOOTH);
 		//glmDraw(sayap, GLM_SMOOTH);
 	glEndList();
-
-    kaktus = (GLMmodel*)malloc(sizeof(GLMmodel));
-	kaktus = glmReadOBJ("kaktus.obj");
-	
-	kaktus_dp=glGenLists(1);
-	glNewList(kaktus_dp,GL_COMPILE);
-        glmList(kaktus, GLM_SMOOTH);
-		//glmDraw(kaktus, GLM_SMOOTH);
-	glEndList();
-
-
 }
 
 

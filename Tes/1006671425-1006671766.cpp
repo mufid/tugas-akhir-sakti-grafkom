@@ -1051,6 +1051,7 @@ void display(void) {
     MATRIX4X4 lightProjectionMatrix1, lightViewMatrix1;
     MATRIX4X4 lightProjectionMatrix2, lightViewMatrix2;
     VECTOR3D lightPosition;
+	float poslampu[3];
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glLoadIdentity();
@@ -1072,6 +1073,7 @@ void display(void) {
     glGetFloatv(GL_MODELVIEW_MATRIX, lightProjectionMatrix1);
     glTranslatef(10.0, 4.0, -15.0);
         if (isHorizon) glLightfv(GL_LIGHT1, GL_POSITION, horizonP);
+	/*glGetFloatv(GL_MODELVIEW_MATRIX, poslampu);*/
     glutSolidSphere(0.3, 10, 10);
     glPopMatrix();
 
@@ -1098,16 +1100,22 @@ void display(void) {
 
     DrawScene();
     
-	// SPARTA SHADOW
-
-	//glShadowProjection(lamp1_position, floorPoint, floorNormal);
-
     // pengaturan texture
     if (showTexture) {
         showTextures();
     } else {
         glDisable(GL_TEXTURE_2D);
     }
+	glLoadIdentity();
+
+	// SPARTA SHADOW
+	float floorPoint[] = {0,3.5f,5.f};
+	float floorNormal[] = {0.f, 1.f, 0.f};
+	float horizonP2[] = {10.0, 3.0, 10.0, 1.0};
+	glColor3f(0.0, 0.0, 0.0);
+	glShadowProjection(horizonP2 , floorPoint, floorNormal);
+	DrawScene();
+
 	glFlush();
 	glutSwapBuffers();
 }

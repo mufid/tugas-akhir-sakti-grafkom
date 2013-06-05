@@ -17,4 +17,4 @@ extern GLuint nemo_sirip;
 extern GLuint nemo_buntut;
 
 void initDisplayList();
-
+void glShadowProjection(float * l, float * e, float * n);

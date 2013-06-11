@@ -25,7 +25,34 @@ void drawKaktus(bool tekstur) {
 }
 
 void drawNemo(float keyframe, bool texture) {
-    glRotatef(90, 1.f, 0.f, 0);
+    glRotatef(90, 1.f, 1.f, 1.f);
+    // Gambar bodi dulu
+    glPushMatrix();
     glCallList(texture ? nemo_body_dp : nemo_body_dp_notexture);
+    glPopMatrix();
+    // Terus gambar sirip
+    glPushMatrix();
+    glTranslatef(3.7f, 1.f, 0);
+    // y: kemiringan terhadap posisi badan
+    // z: kemiringan berenang
+    glRotatef(sinf(keyframe*10.f) * 20, 0.f, 0.f, 1.f);
+    glCallList(texture ? nemo_sirip_dp : nemo_sirip_dp_notexture);
+    glPopMatrix();
 
+    glPushMatrix();
+    glRotatef(-20.f, 0, 1.f, 0);
+    glTranslatef(3.7f, 1.f, 0.f);
+    glRotatef(sinf(keyframe*10.f) * 20, 0.f, 0.f, 1.f);
+    glCallList(texture ? nemo_sirip_dp : nemo_sirip_dp_notexture);
+    glPopMatrix();
+
+    // Sirip, bagian bawah
+    glPushMatrix();
+    glRotatef(180.f, 0.f, 1.f, 0);
+    glTranslatef(3.7f, 1.f, 0);
+    // y: kemiringan terhadap posisi badan
+    // z: kemiringan berenang
+    glRotatef(sinf(keyframe*10.f) * 20, 0.f, 0.f, 1.f);
+    glCallList(texture ? nemo_sirip_dp : nemo_sirip_dp_notexture);
+    glPopMatrix();
 }

@@ -1168,35 +1168,34 @@ void DrawScene(bool texture) {
 	displaySnowObject(0.0, 5, 5.5, -4.0);
 	glPopMatrix();
         
-	//Gambar kaktus yey
-	
+	//Gambar kaktus 1 yey
 	glPushMatrix();
-	glTranslatef(-7.f, -5.f, -10.f);
+	glTranslatef(-7.f, -10.f, -17.f);
+	glScalef(1.3f, 1.3f, 1.3f);
+	drawKaktus(texture);
+    glPopMatrix();
+
+    //Gambar kaktus 2 yey
+    glPushMatrix();
+	glTranslatef(8.f, -10.f, -17.f);
 	glScalef(1.3f,1.3f,1.3f);
 	drawKaktus(texture);
+    glPopMatrix();
 
-	glLoadIdentity();
-	glTranslatef(10.f, -5.f, -10.f);
-	glScalef(2.f,2.f,2.f);
+    // Gambar kaktus 3 yey
+    glPushMatrix();
+	glTranslatef(0.f, -10.f, -17.f);
+	glScalef(1.3f,1.3f,1.3f);
 	drawKaktus(texture);
+    glPopMatrix();
 
-	glLoadIdentity();
-	glTranslatef(0.f, -5.f, -10.f);
-	glScalef(2.f,2.f,2.f);
+    // Gambar Nemo yey
+    glPushMatrix();
+	glTranslatef(0.f, -10.f, -17.f);
+	glScalef(1.3f,1.3f,1.3f);
 	drawKaktus(texture);
-	glPopMatrix();
-	glPushMatrix();
-	glLoadIdentity();
-	//gambarNemo(0.f);
-	glPopMatrix();
-	
-	glPopMatrix();
-	// Zudomon!
-	glPushMatrix();
-	glLoadIdentity();
-	glTranslatef(5.f, 0.f, 0);
-	glPopMatrix();
-	
+    glPopMatrix();
+
 }
 
 void showTextures() {

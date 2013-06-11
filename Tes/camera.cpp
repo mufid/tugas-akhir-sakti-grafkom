@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "camera.h"
 #include "math.h"
 #include <iostream>

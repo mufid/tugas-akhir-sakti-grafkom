@@ -1171,8 +1171,8 @@ void DrawScene(bool texture) {
 	//Gambar kaktus yey
 	
 	glPushMatrix();
-	glTranslatef(-10.f, -5.f, -10.f);
-	glScalef(2.f,2.f,2.f);
+	glTranslatef(-7.f, -5.f, -10.f);
+	glScalef(1.3f,1.3f,1.3f);
 	drawKaktus(texture);
 
 	glLoadIdentity();
@@ -1490,7 +1490,7 @@ int main(int argc, char **argv) {
 
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     // Solving unknown ATI Problem on Mufid's computer
-    glutInitWindowSize(1087, 700);
+    glutInitWindowSize(1212, 708);
     glutCreateWindow("WS2_Fajar Setyo Nugroho_1006671425_Muhammad Mufid Afif_1006671766");
 
 	init();

@@ -140,6 +140,10 @@ double jointInc = 10;
 GLfloat rot = 0.0, rotInc = 0.12; // Derajat perputaran model
 bool isSpin = true; // Apakah model perlu berputar?
 
+// Apakah sedang dalam wireframe mode atau shading mode. TRUE
+// apabila sedang dalam wireframe mode. FALSE jika dalam kondisi
+// yang lain
+bool wireframe = false;
 // Light
 bool isLight[] = {true, true, true, true};
 
@@ -1081,6 +1085,21 @@ void drawPlane(void) {
         glEnable(GL_TEXTURE_GEN_T); // Enable Texture Coord Generation For T ( NEW )
 		glBindTexture(GL_TEXTURE_2D, floorTex); //binding texture
     }
+
+    // Init untuk wireframe apabila dia wireframe mode
+    // Ini akan menjadi dasar kehidupan berbangsa dan bernegara
+    // apakah dia ingin menjadikan sebuah tampilan yang hanya
+    // garis-garis atau tampilan indah.
+    if (wireframe)
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    }
+    else
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+    
+
     glColor3f(0.0, 0.5, 0.8);
     glBegin(GL_POLYGON);
     glVertex3f(-18.5, -10.0, -30);
@@ -1365,8 +1384,15 @@ void camMenu(int id) {
 // Fungsi pengaturan material
 void materialMenu(int id) 
 {
+    // Bagus mode
 	if(id == -1) {
 		showTexture = true;
+    }
+    // Wireframe mode
+    else if (id == 3) {
+        showTexture = true;
+        wireframe = true;
+    // Only material mode
 	} else {
 		currentMaterial = id + 1;
 		showTexture = false;
@@ -1490,7 +1516,7 @@ int main(int argc, char **argv) {
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     // Solving unknown ATI Problem on Mufid's computer
     glutInitWindowSize(1212, 708);
-    glutCreateWindow("WS2_Fajar Setyo Nugroho_1006671425_Muhammad Mufid Afif_1006671766");
+    glutCreateWindow("TugasAkhir_Fajar Setyo Nugroho_1006671425_Muhammad Mufid Afif_1006671766");
 
 	init();
     glutReshapeFunc(reshape);
@@ -1525,6 +1551,7 @@ int main(int argc, char **argv) {
     glutAddMenuEntry("Standard", 0);
     glutAddMenuEntry("Greymon", 1);
     glutAddMenuEntry("Black Dragon", 2);
+    glutAddMenuEntry("Wireframe Mode", 3);
 	camInt = glutCreateMenu(camMenu);
     glutAddMenuEntry("Moving Camera", 0);
     glutAddMenuEntry("Dragon View", 1);

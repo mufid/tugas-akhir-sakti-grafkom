@@ -1,5 +1,5 @@
 
 #include "../init.h"
 
-void drawZudomonNoTexture();
-void drawZudomon();
+void drawKaktus(bool tekstur);
+void drawNemo(float keyframe, bool texture);

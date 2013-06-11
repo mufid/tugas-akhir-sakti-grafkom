@@ -6,8 +6,8 @@ GLuint nemo_body_dp;
 GLuint nemo_body_dp_notexture;
 GLuint nemo_sirip_dp;
 GLuint nemo_sirip_dp_notexture;
-GLuint nemo_buntut;
-GLuint nemo_buntut_notexture;
+GLuint nemo_buntut_dp;
+GLuint nemo_buntut_dp_notexture;
 
 //Output a cylinder with both lids.
 //Erwan Martin <public@fzwte.net>
@@ -20,18 +20,15 @@ glTranslatef(0.0f, 0.0f, HEIGHT); \
 gluDisk(QUAD, 0.0f, TOP, SLICES, 1); \
 glTranslatef(0.0f, 0.0f, -HEIGHT); 
 
-void drawZudomonNoTexture() {
-
+void drawKaktus(bool tekstur) {
+    glCallList(tekstur ? kaktus_dp : kaktus_dp_notexture);
 }
 
-void drawZudomon() {
-    //SOLID_CLOSED_CYLINDER(neck, 0.4, MAX_WING, 7.0, 10, 10);
-}
-
-void gambarNemo(float keyframe) {
+void drawNemo(float keyframe, bool texture) {
+    return; // debug, do nothing
     glTranslatef(0.f, -5.f, -10.f);
     glScalef(.9f,.9f,.9f);
     glRotatef(90, 1.f, 0.f, 0);
-    glCallList(nemo_body_dp);
+    glCallList(texture ? nemo_body_dp : nemo_body_dp_notexture);
 
 }

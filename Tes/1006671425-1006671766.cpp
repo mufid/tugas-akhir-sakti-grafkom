@@ -345,7 +345,7 @@ void reshape(int w, int h) {
     glViewport(0, 0, w, h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-
+    printf("Dirubah ukurannya ke %dx%d\n", w, h);
     gluPerspective(FOVY, aspect, ZNEAR, ZFAR);
     glGetFloatv(GL_MODELVIEW_MATRIX, cameraProjectionMatrix);
     glMatrixMode(GL_MODELVIEW);
@@ -1071,6 +1071,8 @@ void displaySnowObject(GLfloat initAngle, GLfloat initX, GLfloat initY, GLfloat 
 	glPopMatrix();
 }
 
+void DrawScene(bool);
+
 void drawPlane(void) {
      // menggambar lantai
     if (showTexture) {
@@ -1158,34 +1160,30 @@ void drawPlane(void) {
 
 }
 
-void DrawScene(void) {
+void DrawScene(bool texture) {
     // Menggambar objek utama
 	glPushMatrix();
 	displayDragonObject(0.0, -8.0-dragV*5/2, 8.0+dragV, -2.0);
 	displayPineObject(0.0, 15.0, 1.5, -11.0);
 	displaySnowObject(0.0, 5, 5.5, -4.0);
 	glPopMatrix();
-
         
 	//Gambar kaktus yey
-	 
-    drawZudomonNoTexture();
 	
-	glEnable(GL_TEXTURE_2D);
 	glPushMatrix();
 	glTranslatef(-10.f, -5.f, -10.f);
 	glScalef(2.f,2.f,2.f);
-	glCallList(kaktus_dp);
+	drawKaktus(texture);
 
 	glLoadIdentity();
 	glTranslatef(10.f, -5.f, -10.f);
 	glScalef(2.f,2.f,2.f);
-	glCallList(kaktus_dp);
+	drawKaktus(texture);
 
 	glLoadIdentity();
 	glTranslatef(0.f, -5.f, -10.f);
 	glScalef(2.f,2.f,2.f);
-	glCallList(kaktus_dp);
+	drawKaktus(texture);
 	glPopMatrix();
 	glPushMatrix();
 	glLoadIdentity();
@@ -1197,7 +1195,6 @@ void DrawScene(void) {
 	glPushMatrix();
 	glLoadIdentity();
 	glTranslatef(5.f, 0.f, 0);
-	drawZudomon();
 	glPopMatrix();
 	
 }
@@ -1250,7 +1247,7 @@ void display(void) {
     glPopMatrix();
 	
     glEnable(GL_LIGHTING);
-    DrawScene();
+    DrawScene(showTexture);
 	glDisable(GL_LIGHTING);
 	
 	glColor3f(0.0, 0.0, 0.0);
@@ -1273,8 +1270,9 @@ void display(void) {
 		if (isLight[ii]) {
 			for(int jj = 0; jj < 4; ++jj) {
 				glPushMatrix();
-				glShadowProjection(lamp[ii], vPoint[jj], vNormal[jj]); 
-				DrawScene();
+				glShadowProjection(lamp[ii], vPoint[jj], vNormal[jj]);
+                // Draw scene with no texture
+				DrawScene(false);
 				glPopMatrix();
 			}
 		}
@@ -1491,7 +1489,8 @@ int main(int argc, char **argv) {
     glutInit(&argc, argv);
 
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-    glutInitWindowSize(1024, 600);
+    // Solving unknown ATI Problem on Mufid's computer
+    glutInitWindowSize(1087, 700);
     glutCreateWindow("WS2_Fajar Setyo Nugroho_1006671425_Muhammad Mufid Afif_1006671766");
 
 	init();

@@ -16,8 +16,8 @@ extern GLuint nemo_body_dp;
 extern GLuint nemo_body_dp_notexture;
 extern GLuint nemo_sirip_dp;
 extern GLuint nemo_sirip_dp_notexture;
-extern GLuint nemo_buntut;
-extern GLuint nemo_buntut_notexture;
+extern GLuint nemo_buntut_dp;
+extern GLuint nemo_buntut_dp_notexture;
 
 void initDisplayList();
 void glShadowProjection(float * l, float * e, float * n);

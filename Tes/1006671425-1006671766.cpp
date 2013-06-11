@@ -15,18 +15,19 @@
 #include "glm\glm.h"
 #include "model/zudomon.h"
 #include "init.h"
-
+#include "camera.h"
 using namespace std;
 
 // Variables
 
 // Perspective Constant
+CCamera Camera;
 #define FOVY (double) 80.0
 #define ZNEAR (double) 0.6
 #define ZFAR (double) 98.0
 #define DRAGON_SCALE (double) 0.6
 #define SNOW_SCALE (double) 0.6
-#define FPS 33
+#define FPS 10
 
 // Object Dimension Constant
 #define HIP_UPPER 0.8
@@ -85,18 +86,6 @@ GLfloat lightD[3][4] = {{0.0, 0.0, 0.8, 1.0},
 					    {0.8, 0.0, 0.0, 1.0},
                         {1.0, 1.0, 1.0, 1.0}};
 
-// Horizontal Light
-GLfloat horizonA[] = {0.3, 0.3, 0.3, 1.0},
-		horizonD[] = {0.8, 0.0, 0.0, 1.0}, 
-		horizonS[] = {0.6, 0.6, 0.6, 1.0},
-		horizonP[] = {10.0, 3.0, 0.0, 1.0};
-
-// Vertical Lightx
-GLfloat verticA[] = {0.0, 0.0, 0.0, 1.0},
-		verticD[] = {0.8, 0.0, 0.0, 1.0}, 
-		verticS[] = {0.6, 0.6, 0.6, 1.0},
-		verticP[] = {10.0, 3.0, -30.0, 1.0};
-
 // Materials
 // silver, gold, ruby, emerald
 
@@ -143,7 +132,7 @@ glTranslatef(0.0f, 0.0f, -HEIGHT);
 bool isPlay = false; // Apakah animasi bermain?
 bool isHorizon = true, isVertic = false; // Apakah lampu menyala?
 
-double lightDegree = 0, lightInc = 0.05; // Derajat Lampu
+double lightDegree = 0, lightInc = 1; // Derajat Lampu
 
 int lockedPart = 0; // Index joint yang sedang aktif
 double jointDegree[9] = {20, 0, 0, 0, 0, 0, 0, 0, 0}; // Derajat tiap joint
@@ -151,6 +140,49 @@ double jointInc = 10;
 
 GLfloat rot = 0.0, rotInc = 0.12; // Derajat perputaran model
 bool isSpin = true; // Apakah model perlu berputar?
+
+// Light
+bool isLight[] = {true, true, true, true};
+
+GLfloat /* light 1: atas depan*/
+lamp1A[] = {0.5, 0.5, 0.5, 1.0},
+lamp1D[] = {0.9, 0.8, 0.8, 1.0}, 
+lamp1S[] = {0.6, 0.6, 0.6, 1.0},
+lamp1P[] ={0.0, 5.0, 5.0, 1.0};
+
+GLfloat /*light 2: kiri atas*/
+lamp2A[] = {0.0, 0.0, 0.0, 1.0},
+lamp2D[] = {0.9, 0.0, 0.9, 1.0}, // ungu
+lamp2S[] = {0.6, 0.6, 0.6, 1.0},
+lamp2P[] = {-18.0, 15.0, 0.0, 10.0};
+
+GLfloat /*light 3: kanan atas*/
+lamp3A[] = {0.0, 0.0, 0.0, 1.0},
+lamp3D[] = {0.0, 0.6, 0.9, 1.0}, // biru muda
+lamp3S[] = {0.6, 0.6, 0.6, 1.0},
+lamp3P[] = {18.0, 15.0, 0.0, 10.0};
+
+GLfloat /* Horizontal Light */
+horizonA[] = {0.3, 0.3, 0.3, 1.0},
+horizonD[] = {0.8, 0.0, 0.0, 1.0}, 
+horizonS[] = {0.6, 0.6, 0.6, 1.0},
+horizonP[] = {10.0, 3.0, 0.0, 1.0};
+
+// Camera
+bool isMoving = true, isDragon = true;
+
+// lamp positions
+float lamp4[] = {10.0, 3.0, 0.0};
+float lamp[4][3] = {{0.0, 17.0, -10.0}, {-18.0, 17.0, 10.0}, {18.0, 17.0, 10.0}, {10.0, 3.0, 0.0}}; 
+
+/* variabel untuk pembentukan bayangan */
+// vektor normal untuk setiap sisi ruangan
+// bawah belakang kiri kanan
+float vNormal[4][3] = {{0.0, -1.0, 0.0}, {0.0, 0.0, -1.0}, {-1.0, 0.0, 0.0}, {1.0, 0.0, 0.0}};
+
+// titik-titik yang terletak pada masing-masing sisi ruangan
+// bawah belakang kiri kanan
+float vPoint[4][3] = {{0.0, -9.95, -17.5}, {0.0, 0.0, -29.0}, {-18.0, 0.0, -17.5}, {18.0, 0.0, -17.5}};
 
 // Animation Variables
 bool isAnimate = true; // Apakah model beranimasi?
@@ -161,6 +193,10 @@ int dragStat = 0;
 bool showTexture = false;
 GLuint shadowMapTexture;
 GLuint dragonTex;
+GLuint snowTex;
+GLuint pineTex;
+GLuint floorTex;
+GLuint wallTex;
 const int shadowMapSize = 512;
 static GLfloat coef[] = {1.0, 1.0, 1.0, 0.0};
 
@@ -176,8 +212,8 @@ GLuint LoadTextureRAW(const char * filename, int wrap) {
     if (file == NULL) return 0;
 
     // allocate buffer
-    width = 256;
-    height = 256;
+    width = 600;
+    height = 600;
     data = (unsigned char *) malloc(width * height * 3);
 
     // read texture data
@@ -253,29 +289,70 @@ void init() {
 	gluQuadricDrawStyle(pine, GLU_FILL);
 	snow = gluNewQuadric();
 	gluQuadricDrawStyle(snow, GLU_FILL);
+	
+	glLightfv(GL_LIGHT1, GL_POSITION, lamp1P);
+    glLightfv(GL_LIGHT1, GL_AMBIENT, lamp1A);
+    glLightfv(GL_LIGHT1, GL_DIFFUSE, lamp1D);
+    glLightfv(GL_LIGHT1, GL_SPECULAR, lamp1S);
+	
+	glLightfv(GL_LIGHT2, GL_POSITION, lamp2P);
+    glLightfv(GL_LIGHT2, GL_AMBIENT, lamp2A);
+    glLightfv(GL_LIGHT2, GL_DIFFUSE, lamp2D);
+    glLightfv(GL_LIGHT2, GL_SPECULAR, lamp2S);
+	
+	glLightfv(GL_LIGHT3, GL_POSITION, lamp3P);
+    glLightfv(GL_LIGHT3, GL_AMBIENT, lamp3A);
+    glLightfv(GL_LIGHT3, GL_DIFFUSE, lamp3D);
+    glLightfv(GL_LIGHT3, GL_SPECULAR, lamp3S);
 
-    glLightfv(GL_LIGHT1, GL_POSITION, horizonP);
-    glLightfv(GL_LIGHT1, GL_AMBIENT, horizonA);
-    glLightfv(GL_LIGHT1, GL_DIFFUSE, horizonD);
-    glLightfv(GL_LIGHT1, GL_SPECULAR, horizonS);
-
-    glLightfv(GL_LIGHT2, GL_POSITION, verticP);
-    glLightfv(GL_LIGHT2, GL_AMBIENT, verticA);
-    glLightfv(GL_LIGHT2, GL_DIFFUSE, verticD);
-    glLightfv(GL_LIGHT2, GL_SPECULAR, verticS);
-
+    glLightfv(GL_LIGHT4, GL_POSITION, horizonP);
+    glLightfv(GL_LIGHT4, GL_AMBIENT, horizonA);
+    glLightfv(GL_LIGHT4, GL_DIFFUSE, horizonD);
+    glLightfv(GL_LIGHT4, GL_SPECULAR, horizonS);
+	
 	glEnable(GL_LIGHT1);
 	glEnable(GL_LIGHT2);
+	glEnable(GL_LIGHT3);
+	glEnable(GL_LIGHT4);
 
     glDepthFunc(GL_LEQUAL);
     glEnable(GL_DEPTH_TEST);
 	
-    dragonTex = LoadTextureRAW("orange.raw", TRUE);
+    dragonTex = LoadTextureRAW("dark_blue.raw", TRUE);
     if (!dragonTex) printf("Texture File not found !\n");
+	
+    pineTex = LoadTextureRAW("yellow_dot.raw", TRUE);
+    if (!pineTex) printf("Texture File not found !\n");
+	
+    snowTex = LoadTextureRAW("bloody_violet.raw", TRUE);
+    if (!snowTex) printf("Texture File not found !\n");
+	
+    wallTex = LoadTextureRAW("sunset_wall.raw", TRUE);
+    if (!wallTex) printf("Texture File not found !\n");
+
+    floorTex = LoadTextureRAW("green_floor.raw", TRUE);
+    if (!floorTex) printf("Texture File not found !\n");
 
 }
 
-// Buat kepala dari ini semua
+GLuint windowWidth;
+GLuint windowHeight;
+
+// Reshape Function
+void reshape(int w, int h) {
+    windowWidth = w;
+    windowHeight = h;
+	const float aspect = (float) w / (float) h;
+    glViewport(0, 0, w, h);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+
+    gluPerspective(FOVY, aspect, ZNEAR, ZFAR);
+    glGetFloatv(GL_MODELVIEW_MATRIX, cameraProjectionMatrix);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+}
+
 void DrawKepala()
 {
     glPushMatrix();
@@ -343,24 +420,6 @@ void DrawKepala()
 	}
 	glPopMatrix();
     glPopMatrix(); 
-}
-
-GLuint windowWidth;
-GLuint windowHeight;
-
-// Reshape Function
-void reshape(int w, int h) {
-    windowWidth = w;
-    windowHeight = h;
-	const float aspect = (float) w / (float) h;
-    glViewport(0, 0, w, h);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-
-    gluPerspective(FOVY, aspect, ZNEAR, ZFAR);
-    glGetFloatv(GL_MODELVIEW_MATRIX, cameraProjectionMatrix);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
 }
 
 void DrawLArm() {
@@ -805,6 +864,7 @@ void DrawBody() {
 
 void displayDragonObject(GLfloat initAngle, GLfloat initX, GLfloat initY, GLfloat initZ) {
 	glPushMatrix();
+	glRotatef(initAngle, 0.0, 1.0, 0.0);
     glTranslatef(initX, initY, initZ);
     switch (currentMaterial)
     {
@@ -838,11 +898,12 @@ void displayDragonObject(GLfloat initAngle, GLfloat initX, GLfloat initY, GLfloa
         glEnable(GL_TEXTURE_GEN_T); // Enable Texture Coord Generation For T ( NEW )
 		glBindTexture(GL_TEXTURE_2D, dragonTex); //binding texture
     }
-
+	
+	glRotatef(initAngle, 0.0, 1.0, 0.0);
 	glScalef(DRAGON_SCALE, DRAGON_SCALE+0.05, DRAGON_SCALE);
-	glRotatef(initAngle, 0.0, 0.0, 1.0);
+	glRotatef(-10+dragV*20/2, 0.0, 0.0, 1.0);
 	DrawBody();
-	glRotatef(initAngle, .0, 0.0, -1.0);
+	glRotatef(-10+dragV*20/2, .0, 0.0, -1.0);
 	glScalef(1/DRAGON_SCALE, 1/DRAGON_SCALE, 1/DRAGON_SCALE);
 	
     if (showTexture) {
@@ -877,7 +938,21 @@ void displayPineObject(GLfloat initAngle, GLfloat initX, GLfloat initY, GLfloat 
 	    glMaterialf(GL_FRONT, GL_SHININESS, goldShine);
         break;
     }
+	
+	
+    if (showTexture) {
+    	glMaterialfv(GL_FRONT, GL_SPECULAR, whiteS);
+    	glMaterialfv(GL_FRONT, GL_AMBIENT, whiteA);
+	    glMaterialfv(GL_FRONT, GL_DIFFUSE, whiteD);
+	    glMaterialf(GL_FRONT, GL_SHININESS, whiteShine);
+		glEnable(GL_TEXTURE_2D);
+        glEnable(GL_TEXTURE_GEN_S); // Enable Texture Coord Generation For S ( NEW )
+        glEnable(GL_TEXTURE_GEN_T); // Enable Texture Coord Generation For T ( NEW )
+		glBindTexture(GL_TEXTURE_2D, pineTex); //binding texture
+    }
+
 	glTranslatef(0.0, -5.8 -(4), -15.0);
+	
 	glRotatef(-90, 1.0, 0.0, 0.0);
 	SOLID_CLOSED_CYLINDER(pine, 2, 2, 7, 10, 10);	
 	glRotatef(90, 1.0, 0.0, 0.0);
@@ -895,6 +970,11 @@ void displayPineObject(GLfloat initAngle, GLfloat initX, GLfloat initY, GLfloat 
 	glRotatef(-90, 1.0, 0.0, 0.0);
 	SOLID_CLOSED_CYLINDER(pine, 4, 0, 4, 10, 10);	
 	glRotatef(90, 1.0, 0.0, 0.0);
+    if (showTexture) {
+        glDisable(GL_TEXTURE_GEN_S); // Disable Texture Coord Generation For S ( NEW )
+        glDisable(GL_TEXTURE_GEN_T); // Disable Texture Coord Generation For T ( NEW )
+		glDisable(GL_TEXTURE_2D);
+    }
 	glPopMatrix();
 }
 
@@ -922,12 +1002,20 @@ void displaySnowObject(GLfloat initAngle, GLfloat initX, GLfloat initY, GLfloat 
 	    glMaterialf(GL_FRONT, GL_SHININESS, goldShine);
         break;
     }
+    	
+    if (showTexture) {
     	glMaterialfv(GL_FRONT, GL_SPECULAR, whiteS);
     	glMaterialfv(GL_FRONT, GL_AMBIENT, whiteA);
 	    glMaterialfv(GL_FRONT, GL_DIFFUSE, whiteD);
 	    glMaterialf(GL_FRONT, GL_SHININESS, whiteShine);
+		glEnable(GL_TEXTURE_2D);
+        glEnable(GL_TEXTURE_GEN_S); // Enable Texture Coord Generation For S ( NEW )
+        glEnable(GL_TEXTURE_GEN_T); // Enable Texture Coord Generation For T ( NEW )
+		glBindTexture(GL_TEXTURE_2D, snowTex); //binding texture
+    }
 
 	glTranslatef(0.0, -5.8 -(4), -15.0);
+	glRotatef(initAngle, 0.0, 1.0, 0.0);
 	glScalef(SNOW_SCALE, SNOW_SCALE, SNOW_SCALE);
 	
 	glRotatef(-30, 0.0, 1.0, .0);
@@ -976,66 +1064,144 @@ void displaySnowObject(GLfloat initAngle, GLfloat initX, GLfloat initY, GLfloat 
 	glTranslatef(0, -6, 2);
 	SOLID_CLOSED_CYLINDER(snow, 1, 0, 5, 10, 10);	
 	glScalef(1/SNOW_SCALE, 1/SNOW_SCALE, 1/SNOW_SCALE);
+    if (showTexture) {
+        glDisable(GL_TEXTURE_GEN_S); // Disable Texture Coord Generation For S ( NEW )
+        glDisable(GL_TEXTURE_GEN_T); // Disable Texture Coord Generation For T ( NEW )
+		glDisable(GL_TEXTURE_2D);
+    }
 	glPopMatrix();
+}
+
+void drawPlane(void) {
+     // menggambar lantai
+    if (showTexture) {
+		glEnable(GL_TEXTURE_2D);
+        glEnable(GL_TEXTURE_GEN_S); // Enable Texture Coord Generation For S ( NEW )
+        glEnable(GL_TEXTURE_GEN_T); // Enable Texture Coord Generation For T ( NEW )
+		glBindTexture(GL_TEXTURE_2D, floorTex); //binding texture
+    }
+    glColor3f(0.0, 0.5, 0.8);
+    glBegin(GL_POLYGON);
+    glVertex3f(-18.5, -10.0, -30);
+    glVertex3f(-18.5, -10.0, -10);
+    glVertex3f(18.5, -10.0, -10);
+    glVertex3f(18.5, -10.0, -30);
+    glEnd();
+	
+    if (showTexture) {
+        glDisable(GL_TEXTURE_GEN_S); // Disable Texture Coord Generation For S ( NEW )
+        glDisable(GL_TEXTURE_GEN_T); // Disable Texture Coord Generation For T ( NEW )
+		glDisable(GL_TEXTURE_2D);
+    }
+
+    // menggambar dinding kiri
+    if (showTexture) {
+		glEnable(GL_TEXTURE_2D);
+        glEnable(GL_TEXTURE_GEN_S); // Enable Texture Coord Generation For S ( NEW )
+        glEnable(GL_TEXTURE_GEN_T); // Enable Texture Coord Generation For T ( NEW )
+		glBindTexture(GL_TEXTURE_2D, wallTex); //binding texture
+    }
+    glColor3f(0.0, 0.3, 0.5);
+    glBegin(GL_POLYGON);
+    glVertex3f(-18.5, -10, -30);
+    glVertex3f(-18.5, -10, -10);
+    glVertex3f(-18.5, 17, -10);
+    glVertex3f(-18.5, 17, -30);
+    glEnd();
+	
+	
+    if (showTexture) {
+        glDisable(GL_TEXTURE_GEN_S); // Disable Texture Coord Generation For S ( NEW )
+        glDisable(GL_TEXTURE_GEN_T); // Disable Texture Coord Generation For T ( NEW )
+		glDisable(GL_TEXTURE_2D);
+    }
+    // menggambar dinding kanan
+    if (showTexture) {
+		glEnable(GL_TEXTURE_2D);
+        glEnable(GL_TEXTURE_GEN_S); // Enable Texture Coord Generation For S ( NEW )
+        glEnable(GL_TEXTURE_GEN_T); // Enable Texture Coord Generation For T ( NEW )
+		glBindTexture(GL_TEXTURE_2D, wallTex); //binding texture
+    }
+    glColor3f(0.0, 0.3, 0.5);
+    glBegin(GL_POLYGON);
+    glVertex3f(18.5, -10, -30);
+    glVertex3f(18.5, -10, -10);
+    glVertex3f(18.5, 17, -10);
+    glVertex3f(18.5, 17, -30);
+    glEnd();
+	
+    if (showTexture) {
+        glDisable(GL_TEXTURE_GEN_S); // Disable Texture Coord Generation For S ( NEW )
+        glDisable(GL_TEXTURE_GEN_T); // Disable Texture Coord Generation For T ( NEW )
+		glDisable(GL_TEXTURE_2D);
+    }
+
+    // menggambar dinding belakang
+    if (showTexture) {
+		glEnable(GL_TEXTURE_2D);
+        glEnable(GL_TEXTURE_GEN_S); // Enable Texture Coord Generation For S ( NEW )
+        glEnable(GL_TEXTURE_GEN_T); // Enable Texture Coord Generation For T ( NEW )
+		glBindTexture(GL_TEXTURE_2D, wallTex); //binding texture
+    }
+    glColor3f(0.0, 0.4, 0.6);
+    glBegin(GL_POLYGON);
+    glVertex3f(-18.5, -10, -30);
+    glVertex3f(-18.5, 17, -30);
+    glVertex3f(18.5, 17, -30);
+    glVertex3f(18.5, -10, -30);
+    glEnd();
+	
+    if (showTexture) {
+        glDisable(GL_TEXTURE_GEN_S); // Disable Texture Coord Generation For S ( NEW )
+        glDisable(GL_TEXTURE_GEN_T); // Disable Texture Coord Generation For T ( NEW )
+		glDisable(GL_TEXTURE_2D);
+    }
+
 }
 
 void DrawScene(void) {
     // Menggambar objek utama
-    glEnable(GL_LIGHTING);
-	    glPushMatrix();
-	    displayDragonObject(-10+dragV*20/2, -8.0-dragV*5/2, 8.0+dragV, -2.0);
-		displayPineObject(0.0, 15.0, 1.5, -11.0);
-		displaySnowObject(0.0, 5, 5.5, -4.0);
-	    glPopMatrix();
+	glPushMatrix();
+	displayDragonObject(0.0, -8.0-dragV*5/2, 8.0+dragV, -2.0);
+	displayPineObject(0.0, 15.0, 1.5, -11.0);
+	displaySnowObject(0.0, 5, 5.5, -4.0);
+	glPopMatrix();
 
-        // Dinding bawah
-        glPushMatrix();
-        glTranslatef(0.f, -7.f, -10.f);
-        glColor3f(.7f, .2f, .4f);
-	    glScalef(1.0f, 0.05f, 1.0f);
-	    glutSolidCube(30.f);
-        glPopMatrix(); 
-		// Dinding belakang
-        glPushMatrix();
-        glTranslatef(0.f, 0.f, -30.f);
-        glColor3f(.7f, .2f, .4f);
-	    glScalef(30.0f, 30.f, 1.0f);
-	    glutSolidCube(1.f);
-        glPopMatrix();
+        
+	//Gambar kaktus yey
+	 
+	/*
+	glEnable(GL_TEXTURE_2D);
+	glPushMatrix();
+	glTranslatef(-10.f, -5.f, -10.f);
+	glScalef(2.f,2.f,2.f);
+	glCallList(kaktus_dp);
 
-        // Gambar kaktus yey
-        glEnable(GL_TEXTURE_2D);
-        glPushMatrix();
-            glTranslatef(-10.f, -5.f, -10.f);
-            glScalef(2.f,2.f,2.f);
-            glCallList(kaktus_dp);
+	glLoadIdentity();
+	glTranslatef(10.f, -5.f, -10.f);
+	glScalef(2.f,2.f,2.f);
+	glCallList(kaktus_dp);
 
-            glLoadIdentity();
-            glTranslatef(10.f, -5.f, -10.f);
-            glScalef(2.f,2.f,2.f);
-            glCallList(kaktus_dp);
-
-            glLoadIdentity();
-            glTranslatef(0.f, -5.f, -10.f);
-            glScalef(2.f,2.f,2.f);
-            glCallList(kaktus_dp);
-
-            glLoadIdentity();
-            gambarNemo(0.f);
-
-        glPopMatrix();
-
-        // Zudomon!
-        glPushMatrix();
-            glLoadIdentity();
-            glTranslatef(5.f, 0.f, 0);
-            drawZudomon();
-        glPopMatrix();
-	glDisable(GL_LIGHTING);
-
+	glLoadIdentity();
+	glTranslatef(0.f, -5.f, -10.f);
+	glScalef(2.f,2.f,2.f);
+	glCallList(kaktus_dp);
+	glPopMatrix();
+	glPushMatrix();
+	glLoadIdentity();
+	gambarNemo(0.f);
+	glPopMatrix();
+	
+	glPopMatrix();
+	// Zudomon!
+	glPushMatrix();
+	glLoadIdentity();
+	glTranslatef(5.f, 0.f, 0);
+	drawZudomon();
+	glPopMatrix();
+	*/
 }
 
-/* menginisialisi kemunculan texture */
 void showTextures() {
     // to handle the textures generation and coordinates
     glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR); // Set The Texture Generation Mode
@@ -1049,20 +1215,27 @@ void showTextures() {
 // Display Function
 void display(void) {
     MATRIX4X4 lightProjectionMatrix1, lightViewMatrix1;
-    MATRIX4X4 lightProjectionMatrix2, lightViewMatrix2;
     VECTOR3D lightPosition;
-	float poslampu[3];
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glLoadIdentity();
+	glDisable(GL_LIGHTING);
 	
+	glTranslatef(Camera.Position.x, Camera.Position.y, Camera.Position.z);
+	glRotatef(Camera.RotatedX, 1.0, 0, 0);
+	glRotatef(Camera.RotatedY, 0.0, 1.0, 0);
+	glRotatef(Camera.RotatedZ, 0.0, 0, 1.0);
+	glPushMatrix();
+    drawPlane();
+    glPopMatrix();
+
 	// Lampu horizontal
     glPushMatrix(); 
     if (isHorizon) {
-        glEnable(GL_LIGHT1);
+        glEnable(GL_LIGHT4);
         glColor3f(0.2, 0.2, 0.85);
     } else {
-        glDisable(GL_LIGHT1);
+        glDisable(GL_LIGHT4);
         glColor3f(0.0, 0.0, 0.0);
     }
 
@@ -1072,34 +1245,52 @@ void display(void) {
 	    
     glGetFloatv(GL_MODELVIEW_MATRIX, lightProjectionMatrix1);
     glTranslatef(10.0, 4.0, -15.0);
-        if (isHorizon) glLightfv(GL_LIGHT1, GL_POSITION, horizonP);
-	/*glGetFloatv(GL_MODELVIEW_MATRIX, poslampu);*/
+    if (isHorizon) glLightfv(GL_LIGHT4, GL_POSITION, horizonP);
     glutSolidSphere(0.3, 10, 10);
     glPopMatrix();
-
-	// Lampu vertikal
-    glPushMatrix(); 
-    if (isVertic) {
-        glEnable(GL_LIGHT2);
-        glColor3f(0.2, 0.2, 0.85);
-    } else {
-        glDisable(GL_LIGHT2);
-        glColor3f(0.0, 0.0, 0.0);
-    }
-
-    {
-        glColor3f(0.85, 0.2, 0.2);
-        glTranslatef(0.0, -1.0, -15.0);
-        glRotatef(lightDegree, 0.0, 1.0, 0.0);     
-	    if (isVertic) glLightfv(GL_LIGHT1, GL_POSITION, horizonP);
-        glGetFloatv(GL_MODELVIEW_MATRIX, lightProjectionMatrix1);
-        glTranslatef(10.0, 4.0, -15.0);
-        glutSolidSphere(0.3, 10, 10);
-    }
-    glPopMatrix();
-
+	
+    glEnable(GL_LIGHTING);
     DrawScene();
+	glDisable(GL_LIGHTING);
+	
+	glColor3f(0.0, 0.0, 0.0);
+	
+	/*
+	lamp[3][0] = (cos(lightDegree) * 3.14 / 180) * lamp4[0];
+	lamp[3][2] = (sin(lightDegree) * 3.14 / 180) * lamp4[2];        
+	for(int jj = 0; jj < 4; ++jj) {
+		glPushMatrix();
+		glShadowProjection(lamp[3], vPoint[jj], vNormal[jj]); 
+		
+		displayDragonObject(lightDegree + 135, -8.0-dragV*5/2, 8.0+dragV, -2.0);
+		displayPineObject(lightDegree + 135, 15.0, 1.5, -11.0);
+		displaySnowObject(lightDegree + 135, 5, 5.5, -4.0);
+		glPopMatrix();
+	}
+	*/
+
+	for(int ii = 0; ii < 3; ++ii) {
+		if (isLight[ii]) {
+			for(int jj = 0; jj < 4; ++jj) {
+				glPushMatrix();
+				glShadowProjection(lamp[ii], vPoint[jj], vNormal[jj]); 
+				DrawScene();
+				glPopMatrix();
+			}
+		}
+	}
+
     
+	/*
+	SPARTA SHADOW
+	float floorPoint[] = {0,4.5f,5.f};
+	float floorNormal[] = {0.f, 1.f, 0.f};
+	float horizonP2[] = {10.0, 3.0, 10.0, 1.0};
+	glColor3f(0.0, 0.0, 0.0);
+	glShadowProjection(horizonP2 , floorPoint, floorNormal);
+	DrawScene();
+	*/
+
     // pengaturan texture
     if (showTexture) {
         showTextures();
@@ -1108,14 +1299,7 @@ void display(void) {
     }
 	glLoadIdentity();
 
-	// SPARTA SHADOW
-	float floorPoint[] = {0,3.5f,5.f};
-	float floorNormal[] = {0.f, 1.f, 0.f};
-	float horizonP2[] = {10.0, 3.0, 10.0, 1.0};
-	glColor3f(0.0, 0.0, 0.0);
-	glShadowProjection(horizonP2 , floorPoint, floorNormal);
-	DrawScene();
-
+	
 	glFlush();
 	glutSwapBuffers();
 }
@@ -1139,14 +1323,46 @@ void menu(int id) {
 
 }
 
+// Fungsi menu pengaturan mode
+void modeMenu(int id) {
+	if (id == 0) {
+		isAnimate = true;
+	} else {
+		isAnimate = false;
+	}
+}
+
 // Fungsi menu pengaturan animasi
 void animateMenu(int id) {
 	lockedPart = id;
 }
 
-// Fungsi menu pengaturan lampu horizontal
-void horizonMenu(int id) {
-    isHorizon = id == 0;
+// Fungsi menu pengaturan camera
+void camMenu(int id) {
+	if(id == 1 || id == 2) {
+		isMoving = false;
+		Camera.Reset();
+		if (id == 1) {
+			dragV = 0;
+			isDragon = true;
+			Camera.MoveForward(5.1);
+			Camera.MoveUpward(-5.0);
+			Camera.StrafeRight(8.0);
+			Camera.RotateX(-27.0);
+			Camera.MoveForward(-1.1);
+			Camera.RotateY(15.0);
+			Camera.RotateX(35.0);
+			Camera.MoveForward(-4.1);
+			Camera.RotateZ(5.0);
+		} else {
+			isDragon = false;
+		}
+	} else {
+		isMoving = true;
+		if (id == 3) {
+			Camera.Reset();
+		}
+	}
 }
 
 // Fungsi pengaturan material
@@ -1160,34 +1376,35 @@ void materialMenu(int id)
 	}
 }
 
-// Fungsi menu pengaturan lampu vertical
-void verticMenu(int id) {
-    isVertic = id == 0;
-}
-
-// Fungsi menu pengaturan perputaran model
-void spinMenu(int id) {
-    isSpin = id == 0;
+// Fungsi menu pengaturan lampu
+void lampMenu(int id) {
+    isLight[id] = !isLight[id];
 }
 
 // Fungsi yang mengatur gerak joint
 void mouseClick(int btn, int state, int x, int y) {
-	if (btn==GLUT_LEFT_BUTTON && state==GLUT_DOWN) {
-		if(jointDegree[lockedPart] + jointInc >= 360) {
-			jointDegree[lockedPart] = 0;
-		} else {
-			jointDegree[lockedPart] += jointInc;
+	if(lockedPart != -1 && !isAnimate) {
+		if (btn==GLUT_LEFT_BUTTON && state==GLUT_DOWN) {
+			if(jointDegree[lockedPart] + jointInc >= 360) {
+				jointDegree[lockedPart] = 0;
+			} else {
+				jointDegree[lockedPart] += jointInc;
+			}
+		} else if (btn==GLUT_RIGHT_BUTTON && state==GLUT_DOWN) {
+			if(jointDegree[lockedPart] - jointInc <= 0) {
+				jointDegree[lockedPart] = 360;
+			} else {
+				jointDegree[lockedPart] -= jointInc;
+			}
 		}
-	} else if (btn==GLUT_RIGHT_BUTTON && state==GLUT_DOWN) {
-		if(jointDegree[lockedPart] - jointInc <= 0) {
-			jointDegree[lockedPart] = 360;
-		} else {
-			jointDegree[lockedPart] -= jointInc;
+	} else if (lockedPart == -1) {
+		if (btn==GLUT_LEFT_BUTTON && state==GLUT_DOWN) {
+			lamp[0][1]+=3;
+		} else if (btn==GLUT_RIGHT_BUTTON && state==GLUT_DOWN) {
+			lamp[0][1]-=3;
 		}
 	}
 }
-
-
 
 void frameAnimation(int value) {
 	if(isAnimate) {
@@ -1199,8 +1416,74 @@ void frameAnimation(int value) {
 		} else if(dragVInc > 0 && dragV > 0) {
 			dragVInc = -0.005;
 		} 
+		if(!isMoving && isDragon) {
+			Camera.RotateY(dragVInc*17);
+			Camera.StrafeRight(dragVInc*5);
+			Camera.MoveUpward(-dragVInc*1.5);
+			Camera.MoveForward(-dragVInc*3);		
+			Camera.RotateX(dragVInc*8);
+		}
 	}
 	glutTimerFunc(FPS, frameAnimation, 0); 	
+}
+
+void KeyDown(unsigned char key, int x, int y)
+{
+	if(key == 27) {
+		PostQuitMessage(0);
+	} else if (isMoving) {
+		switch (key) {
+		case 'l':		
+			Camera.RotateY(5.0);
+			display();
+			break;
+		case 'j':		
+			Camera.RotateY(-5.0);
+			display();
+			break;
+		case 's':		
+			Camera.MoveForward( -0.1 ) ;
+			display();
+			break;
+		case 'w':		
+			Camera.MoveForward( 0.1 ) ;
+			display();
+			break;
+		case 'i':		
+			Camera.RotateX(5.0);
+			display();
+			break;
+		case 'k':		
+			Camera.RotateX(-5.0);
+			display();
+			break;
+		case 'd':		
+			Camera.StrafeRight(-0.1);
+			display();
+			break;
+		case 'a':		
+			Camera.StrafeRight(0.1);
+			display();
+			break;
+		case 'q':
+			Camera.MoveUpward(-0.3);
+			display();
+			break;
+		case 'e':
+			Camera.MoveUpward(0.3);
+			display();
+			break;
+
+		case 'u':
+			Camera.RotateZ(-5.0);
+			display();
+			break;
+		case 'o':
+			Camera.RotateZ(5.0);
+			display();
+			break;
+		}
+	}
 }
 
 // Main Function
@@ -1219,8 +1502,12 @@ int main(int argc, char **argv) {
 	
     initDisplayList();
 
-    int animateInt, horizonInt, verticInt, materialInt, spinInt;
+    int modeInt, animateInt, materialInt, lampInt, camInt;
+	modeInt = glutCreateMenu(modeMenu);
+    glutAddMenuEntry("Demo", 0);
+    glutAddMenuEntry("Interaktif", 1);
 	animateInt = glutCreateMenu(animateMenu);
+	glutAddMenuEntry("spotlight", -1);
     glutAddMenuEntry("neck", 0);
 	glutAddMenuEntry("right shoulder", 1);
 	glutAddMenuEntry("left shoulder", 2);
@@ -1230,28 +1517,30 @@ int main(int argc, char **argv) {
 	glutAddMenuEntry("left leg", 6);
 	glutAddMenuEntry("right feet", 7);
 	glutAddMenuEntry("left feet", 8);
-	horizonInt = glutCreateMenu(horizonMenu);
-    glutAddMenuEntry("on", 0);
-    glutAddMenuEntry("off", 1);
-	verticInt = glutCreateMenu(verticMenu);
-    glutAddMenuEntry("on", 0);
-    glutAddMenuEntry("off", 1);
-	spinInt = glutCreateMenu(spinMenu);
-    glutAddMenuEntry("on", 0);
-    glutAddMenuEntry("off", 1);
+	lampInt = glutCreateMenu(lampMenu);
+    glutAddMenuEntry("spotlight", 0);
+    glutAddMenuEntry("left light", 1);
+    glutAddMenuEntry("right light", 2);
+    glutAddMenuEntry("horizontal light", 3);
     materialInt = glutCreateMenu(materialMenu);
     glutAddMenuEntry("Texture", -1);
     glutAddMenuEntry("Standard", 0);
     glutAddMenuEntry("Greymon", 1);
     glutAddMenuEntry("Black Dragon", 2);
+	camInt = glutCreateMenu(camMenu);
+    glutAddMenuEntry("Moving Camera", 0);
+    glutAddMenuEntry("Dragon View", 1);
+    glutAddMenuEntry("wut?", 2);
+    glutAddMenuEntry("Reset View", 3);
     
-
+	
+	glutKeyboardFunc(KeyDown);
 	glutCreateMenu(menu);
+    glutAddSubMenu("Mode?", modeInt);
     glutAddSubMenu("Animate?", animateInt);
-	glutAddSubMenu("Horizontal Light?", horizonInt);
-	glutAddSubMenu("Vertical Light?", verticInt);
-	glutAddSubMenu("Spin?", spinInt);
+	glutAddSubMenu("Toggle Lamp?", lampInt);
     glutAddSubMenu("Material?", materialInt);
+    glutAddSubMenu("Camera?", camInt);
 	glutAttachMenu(GLUT_MIDDLE_BUTTON);
 	glutTimerFunc(FPS, frameAnimation, 0); 	
     glutMainLoop();

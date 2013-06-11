@@ -133,6 +133,9 @@
     <ClInclude Include="libpng\trees.h">
       <Filter>zlib</Filter>
     </ClInclude>
+    <ClInclude Include="camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="1006671425-1006671766.cpp">
@@ -263,6 +266,9 @@
     </ClCompile>
     <ClCompile Include="libpng\pngwrite.c">
       <Filter>pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="camera.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

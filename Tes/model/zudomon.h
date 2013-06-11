@@ -1,5 +1,5 @@
 
 #include "../init.h"
 
+void drawZudomonNoTexture();
 void drawZudomon();
-void gambarNemo(float keyframe);

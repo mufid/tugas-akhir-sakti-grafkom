@@ -92,6 +92,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="camera.h" />
     <ClInclude Include="Extensions\ARB_multitexture_extension.h" />
     <ClInclude Include="Extensions\EXT_texture_env_combine_extension.h" />
     <ClInclude Include="GLee\GLee.h" />
@@ -128,6 +129,7 @@
     <ClInclude Include="wglext.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="camera.cpp" />
     <ClCompile Include="Extensions\ARB_multitexture_extension.cpp" />
     <ClCompile Include="Extensions\EXT_texture_env_combine_extension.cpp" />
     <ClCompile Include="GLee\GLee.c" />

@@ -18,7 +18,7 @@ void initDisplayList()
 	
 	kaktus_dp=glGenLists(1);
 	glNewList(kaktus_dp,GL_COMPILE);
-        glmDraw(kaktus, GLM_SMOOTH | GLM_TEXTURE | GLM_COLOR);
+        glmDraw(kaktus, GLM_SMOOTH );
 		//glmDraw(kaktus, GLM_SMOOTH);
 	glEndList();
 
@@ -35,7 +35,7 @@ void initDisplayList()
     glEnable(GL_TEXTURE_2D);
 
 	glNewList(nemo_body_dp,GL_COMPILE);
-        glmDraw(nemobodi_model, GLM_SMOOTH | GLM_TEXTURE | GLM_MATERIAL);
+        glmDraw(nemobodi_model, GLM_SMOOTH );
 	glEndList();
     
     glDisable(GL_TEXTURE);
@@ -48,12 +48,12 @@ void initDisplayList()
     glmFacetNormals(nemobodi_model);
     glmLinearTexture(nemobodi_model);
 	glmVertexNormals(nemobodi_model, 90.0, GL_TRUE);
-	nemo_sirip = glGenLists(1);
+	nemo_sirip_dp = glGenLists(1);
     glEnable(GL_TEXTURE);
     glEnable(GL_TEXTURE_2D);
 
-	glNewList(nemo_sirip, GL_COMPILE);
-        glmDraw(nemobodi_model, GLM_SMOOTH | GLM_TEXTURE | GLM_MATERIAL);
+	glNewList(nemo_sirip_dp, GL_COMPILE);
+        glmDraw(nemobodi_model, GLM_SMOOTH );
 	glEndList();
 
     // Buntut  yea
@@ -67,7 +67,7 @@ void initDisplayList()
     glEnable(GL_TEXTURE_2D);
 
 	glNewList(nemo_buntut, GL_COMPILE);
-        glmDraw(nemobodi_model, GLM_SMOOTH | GLM_TEXTURE | GLM_MATERIAL);
+        glmDraw(nemobodi_model, GLM_SMOOTH );
 	glEndList();
 
  //   kubus = (GLMmodel*)malloc(sizeof(GLMmodel));
@@ -89,15 +89,6 @@ void initDisplayList()
  //   glDisable(GL_TEXTURE_2D);
 
 	return;
-    GLMmodel* sayap;
-    sayap = (GLMmodel*) malloc(sizeof(GLMmodel));
-	sayap = glmReadOBJ("sayap.obj");
-	
-	sayap_dp=glGenLists(1);
-	glNewList(sayap_dp, GL_COMPILE);
-		glmList(sayap, GLM_SMOOTH);
-		//glmDraw(sayap, GLM_SMOOTH);
-	glEndList();
 }
 
 void glShadowProjection(float * l, float * e, float * n) {

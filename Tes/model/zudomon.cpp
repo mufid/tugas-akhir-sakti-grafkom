@@ -1,10 +1,13 @@
 #include "zudomon.h"
 
 GLuint kaktus_dp;
-GLuint sayap_dp;
+GLuint kaktus_dp_notexture;
 GLuint nemo_body_dp;
-GLuint nemo_sirip;
+GLuint nemo_body_dp_notexture;
+GLuint nemo_sirip_dp;
+GLuint nemo_sirip_dp_notexture;
 GLuint nemo_buntut;
+GLuint nemo_buntut_notexture;
 
 //Output a cylinder with both lids.
 //Erwan Martin <public@fzwte.net>
@@ -17,9 +20,14 @@ glTranslatef(0.0f, 0.0f, HEIGHT); \
 gluDisk(QUAD, 0.0f, TOP, SLICES, 1); \
 glTranslatef(0.0f, 0.0f, -HEIGHT); 
 
+void drawZudomonNoTexture() {
+
+}
+
 void drawZudomon() {
     //SOLID_CLOSED_CYLINDER(neck, 0.4, MAX_WING, 7.0, 10, 10);
 }
+
 void gambarNemo(float keyframe) {
     glTranslatef(0.f, -5.f, -10.f);
     glScalef(.9f,.9f,.9f);

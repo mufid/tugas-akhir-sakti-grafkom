@@ -2,8 +2,7 @@
 #define GLUT_DISABLE_ATEXIT_HACK
 #undef WIN32_LEAN_AND_MEAN 
 #define _CRT_SECURE_NO_DEPRECATE
-#include <stdio.h>
-#include <stdlib.h>
+
 #include <windows.h>
 #include <string>
 #include <cmath>
@@ -1170,7 +1169,8 @@ void DrawScene(void) {
         
 	//Gambar kaktus yey
 	 
-	/*
+    drawZudomonNoTexture();
+	
 	glEnable(GL_TEXTURE_2D);
 	glPushMatrix();
 	glTranslatef(-10.f, -5.f, -10.f);
@@ -1189,7 +1189,7 @@ void DrawScene(void) {
 	glPopMatrix();
 	glPushMatrix();
 	glLoadIdentity();
-	gambarNemo(0.f);
+	//gambarNemo(0.f);
 	glPopMatrix();
 	
 	glPopMatrix();
@@ -1199,7 +1199,7 @@ void DrawScene(void) {
 	glTranslatef(5.f, 0.f, 0);
 	drawZudomon();
 	glPopMatrix();
-	*/
+	
 }
 
 void showTextures() {

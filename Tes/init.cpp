@@ -47,17 +47,13 @@ void initDisplayList()
     nemobodi_model = (GLMmodel*)malloc(sizeof(GLMmodel));
 	nemobodi_model = glmReadOBJ("nemo-bodi.obj");
 
-    glmFacetNormals(nemobodi_model);
-    glmLinearTexture(nemobodi_model);
-	glmVertexNormals(nemobodi_model, 90.0, GL_TRUE);
-
     // Nemo textured, prepping
     glEnable(GL_TEXTURE);
     glEnable(GL_TEXTURE_2D);
     // Nemo textured
     nemo_body_dp = glGenLists(1);
-	glNewList(nemo_body_dp,GL_COMPILE);
-        glmDraw(nemobodi_model, GLM_SMOOTH | GLM_MATERIAL | GLM_COLOR);
+	glNewList(nemo_body_dp, GL_COMPILE);
+        glmDraw(nemobodi_model, GLM_SMOOTH | GLM_MATERIAL | GLM_TEXTURE);
 	glEndList();
 
     glDisable(GL_TEXTURE);
@@ -75,9 +71,6 @@ void initDisplayList()
 
     nemobodi_model = (GLMmodel*)malloc(sizeof(GLMmodel));
 	nemobodi_model = glmReadOBJ("nemo-sirip.obj");
-    glmFacetNormals(nemobodi_model);
-    glmLinearTexture(nemobodi_model);
-	glmVertexNormals(nemobodi_model, 90.0, GL_TRUE);
 
     // Nemo textured, prepping
     glEnable(GL_TEXTURE);
@@ -85,7 +78,7 @@ void initDisplayList()
     // Nemo textured
     nemo_sirip_dp = glGenLists(1);
 	glNewList(nemo_sirip_dp, GL_COMPILE);
-        glmDraw(nemobodi_model, GLM_SMOOTH | GLM_MATERIAL | GLM_COLOR);
+        glmDraw(nemobodi_model, GLM_SMOOTH | GLM_MATERIAL | GLM_TEXTURE);
 	glEndList();
 
     glDisable(GL_TEXTURE);
@@ -104,9 +97,7 @@ void initDisplayList()
     // Buntut  yea
     nemobodi_model = (GLMmodel*)malloc(sizeof(GLMmodel));
 	nemobodi_model = glmReadOBJ("nemo-belakang.obj");
-    glmFacetNormals(nemobodi_model);
-    glmLinearTexture(nemobodi_model);
-	glmVertexNormals(nemobodi_model, 90.0, GL_TRUE);
+
     glEnable(GL_TEXTURE);
     glEnable(GL_TEXTURE_2D);
 
@@ -116,7 +107,7 @@ void initDisplayList()
     // Nemo textured
     nemo_buntut_dp = glGenLists(1);
 	glNewList(nemo_buntut_dp, GL_COMPILE);
-        glmDraw(nemobodi_model, GLM_SMOOTH | GLM_MATERIAL | GLM_COLOR);
+        glmDraw(nemobodi_model, GLM_SMOOTH | GLM_MATERIAL | GLM_TEXTURE);
 	glEndList();
 
     glDisable(GL_TEXTURE);

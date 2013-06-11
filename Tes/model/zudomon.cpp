@@ -25,9 +25,6 @@ void drawKaktus(bool tekstur) {
 }
 
 void drawNemo(float keyframe, bool texture) {
-    return; // debug, do nothing
-    glTranslatef(0.f, -5.f, -10.f);
-    glScalef(.9f,.9f,.9f);
     glRotatef(90, 1.f, 0.f, 0);
     glCallList(texture ? nemo_body_dp : nemo_body_dp_notexture);
 

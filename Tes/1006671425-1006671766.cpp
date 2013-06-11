@@ -189,7 +189,7 @@ double dragV = 0, dragVInc = -0.005;
 int dragStat = 0;
 
 // Texture Variables
-bool showTexture = false;
+bool showTexture = true;
 GLuint shadowMapTexture;
 GLuint dragonTex;
 GLuint snowTex;
@@ -1191,9 +1191,9 @@ void DrawScene(bool texture) {
 
     // Gambar Nemo yey
     glPushMatrix();
-	glTranslatef(0.f, -10.f, -17.f);
+	glTranslatef(0.f, -3.f, -17.f);
 	glScalef(1.3f,1.3f,1.3f);
-	drawKaktus(texture);
+	drawNemo(dragV, texture);
     glPopMatrix();
 
 }

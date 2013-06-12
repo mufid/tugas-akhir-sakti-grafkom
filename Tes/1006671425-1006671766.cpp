@@ -148,6 +148,9 @@ bool wireframe = false;
 bool isLight[] = {true, true, true, true};
 // Kamera jadul vs. Baru
 bool kamerajadul = true;
+// Siapa interaktif yang sedang dipilih? Dragon atau Nemo?
+bool dragonInteractive = false;
+bool nemoInteractive = false;
 
 GLfloat /* light 1: atas depan*/
 lamp1A[] = {0.5, 0.5, 0.5, 1.0},
@@ -1214,7 +1217,7 @@ void DrawScene(bool texture) {
     glPushMatrix();
 	glTranslatef(0.f, -3.f, -17.f);
 	glScalef(1.3f,1.3f,1.3f);
-	drawNemo(dragV, texture);
+	drawNemo(dragV, texture, isAnimate);
     glPopMatrix();
 
 }
@@ -1284,20 +1287,6 @@ void display(void) {
 	glDisable(GL_LIGHTING);
 	
 	glColor3f(0.0, 0.0, 0.0);
-	
-	/*
-	lamp[3][0] = (cos(lightDegree) * 3.14 / 180) * lamp4[0];
-	lamp[3][2] = (sin(lightDegree) * 3.14 / 180) * lamp4[2];        
-	for(int jj = 0; jj < 4; ++jj) {
-		glPushMatrix();
-		glShadowProjection(lamp[3], vPoint[jj], vNormal[jj]); 
-		
-		displayDragonObject(lightDegree + 135, -8.0-dragV*5/2, 8.0+dragV, -2.0);
-		displayPineObject(lightDegree + 135, 15.0, 1.5, -11.0);
-		displaySnowObject(lightDegree + 135, 5, 5.5, -4.0);
-		glPopMatrix();
-	}
-	*/
 
 	for(int ii = 0; ii < 3; ++ii) {
 		if (isLight[ii]) {
@@ -1310,17 +1299,6 @@ void display(void) {
 			}
 		}
 	}
-
-    
-	/*
-	SPARTA SHADOW
-	float floorPoint[] = {0,4.5f,5.f};
-	float floorNormal[] = {0.f, 1.f, 0.f};
-	float horizonP2[] = {10.0, 3.0, 10.0, 1.0};
-	glColor3f(0.0, 0.0, 0.0);
-	glShadowProjection(horizonP2 , floorPoint, floorNormal);
-	DrawScene();
-	*/
 
     // pengaturan texture
     if (showTexture) {
@@ -1366,6 +1344,15 @@ void modeMenu(int id) {
 // Fungsi menu pengaturan animasi
 void animateMenu(int id) {
 	lockedPart = id;
+    dragonInteractive = true;
+    nemoInteractive = false;
+}
+
+void animateMenuNemo(int id) {
+    lockedPart = id;
+    printf("Locked part: %d\n", id);
+    nemoInteractive = true;
+    dragonInteractive = false;
 }
 
 // Fungsi menu pengaturan camera
@@ -1423,7 +1410,23 @@ void lampMenu(int id) {
 
 // Fungsi yang mengatur gerak joint
 void mouseClick(int btn, int state, int x, int y) {
-	if(lockedPart != -1 && !isAnimate) {
+    if (lockedPart != -1 && nemoInteractive && !isAnimate)
+    {
+		if (btn==GLUT_LEFT_BUTTON && state==GLUT_DOWN) {
+			if(nemokeyframes[lockedPart] + jointInc >= 360) {
+				nemokeyframes[lockedPart] = 0;
+			} else {
+				nemokeyframes[lockedPart] += .1;
+			}
+		} else if (btn==GLUT_RIGHT_BUTTON && state==GLUT_DOWN) {
+			if(nemokeyframes[lockedPart] - jointInc <= 0) {
+				nemokeyframes[lockedPart] = 360;
+			} else {
+				nemokeyframes[lockedPart] -= .1;
+			}
+		}
+    }
+    else if(lockedPart != -1 && dragonInteractive && !isAnimate) {
 		if (btn==GLUT_LEFT_BUTTON && state==GLUT_DOWN) {
 			if(jointDegree[lockedPart] + jointInc >= 360) {
 				jointDegree[lockedPart] = 0;
@@ -1543,7 +1546,7 @@ int main(int argc, char **argv) {
 	
     initDisplayList();
 
-    int modeInt, animateInt, materialInt, lampInt, camInt;
+    int modeInt, animateInt, materialInt, lampInt, camInt, nemoInt;
 	modeInt = glutCreateMenu(modeMenu);
     glutAddMenuEntry("Demo", 0);
     glutAddMenuEntry("Interaktif", 1);
@@ -1558,6 +1561,15 @@ int main(int argc, char **argv) {
 	glutAddMenuEntry("left leg", 6);
 	glutAddMenuEntry("right feet", 7);
 	glutAddMenuEntry("left feet", 8);
+    nemoInt = glutCreateMenu(animateMenuNemo);
+    glutAddMenuEntry("sirip-1", 0);
+	glutAddMenuEntry("sirip-2", 1);
+	glutAddMenuEntry("sirip-3", 2);
+	glutAddMenuEntry("sirip-4", 3);
+	glutAddMenuEntry("sirip-5", 4);
+	glutAddMenuEntry("sirip-6", 5);
+	glutAddMenuEntry("sirip-7", 6);
+	glutAddMenuEntry("buntut", 7);
 	lampInt = glutCreateMenu(lampMenu);
     glutAddMenuEntry("spotlight", 0);
     glutAddMenuEntry("left light", 1);
@@ -1579,7 +1591,8 @@ int main(int argc, char **argv) {
 	glutKeyboardFunc(KeyDown);
 	glutCreateMenu(menu);
     glutAddSubMenu("Mode?", modeInt);
-    glutAddSubMenu("Animate?", animateInt);
+    glutAddSubMenu("Animate Dragon?", animateInt);
+    glutAddSubMenu("Animate Nemo?", nemoInt);
 	glutAddSubMenu("Toggle Lamp?", lampInt);
     glutAddSubMenu("Material?", materialInt);
     glutAddSubMenu("Camera?", camInt);

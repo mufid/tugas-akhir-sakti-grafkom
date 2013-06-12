@@ -6,8 +6,8 @@ GLuint nemo_body_dp;
 GLuint nemo_body_dp_notexture;
 GLuint nemo_sirip_dp;
 GLuint nemo_sirip_dp_notexture;
-GLuint nemo_buntut;
-GLuint nemo_buntut_notexture;
+GLuint nemo_buntut_dp;
+GLuint nemo_buntut_dp_notexture;
 
 //Output a cylinder with both lids.
 //Erwan Martin <public@fzwte.net>
@@ -20,18 +20,39 @@ glTranslatef(0.0f, 0.0f, HEIGHT); \
 gluDisk(QUAD, 0.0f, TOP, SLICES, 1); \
 glTranslatef(0.0f, 0.0f, -HEIGHT); 
 
-void drawZudomonNoTexture() {
-
+void drawKaktus(bool tekstur) {
+    glCallList(tekstur ? kaktus_dp : kaktus_dp_notexture);
 }
 
-void drawZudomon() {
-    //SOLID_CLOSED_CYLINDER(neck, 0.4, MAX_WING, 7.0, 10, 10);
-}
+void drawNemo(float keyframe, bool texture) {
+    glRotatef(90, 1.f, 1.f, 1.f);
+    // Gambar bodi dulu
+    glPushMatrix();
+    glCallList(texture ? nemo_body_dp : nemo_body_dp_notexture);
+    glPopMatrix();
+    // Terus gambar sirip
+    glPushMatrix();
+    glTranslatef(3.7f, 1.f, 0);
+    // y: kemiringan terhadap posisi badan
+    // z: kemiringan berenang
+    glRotatef(sinf(keyframe*10.f) * 20, 0.f, 0.f, 1.f);
+    glCallList(texture ? nemo_sirip_dp : nemo_sirip_dp_notexture);
+    glPopMatrix();
 
-void gambarNemo(float keyframe) {
-    glTranslatef(0.f, -5.f, -10.f);
-    glScalef(.9f,.9f,.9f);
-    glRotatef(90, 1.f, 0.f, 0);
-    glCallList(nemo_body_dp);
+    glPushMatrix();
+    glRotatef(-20.f, 0, 1.f, 0);
+    glTranslatef(3.7f, 1.f, 0.f);
+    glRotatef(sinf(keyframe*10.f) * 20, 0.f, 0.f, 1.f);
+    glCallList(texture ? nemo_sirip_dp : nemo_sirip_dp_notexture);
+    glPopMatrix();
 
+    // Sirip, bagian bawah
+    glPushMatrix();
+    glRotatef(180.f, 0.f, 1.f, 0);
+    glTranslatef(3.7f, 1.f, 0);
+    // y: kemiringan terhadap posisi badan
+    // z: kemiringan berenang
+    glRotatef(sinf(keyframe*10.f) * 20, 0.f, 0.f, 1.f);
+    glCallList(texture ? nemo_sirip_dp : nemo_sirip_dp_notexture);
+    glPopMatrix();
 }

@@ -140,6 +140,10 @@ double jointInc = 10;
 GLfloat rot = 0.0, rotInc = 0.12; // Derajat perputaran model
 bool isSpin = true; // Apakah model perlu berputar?
 
+// Apakah sedang dalam wireframe mode atau shading mode. TRUE
+// apabila sedang dalam wireframe mode. FALSE jika dalam kondisi
+// yang lain
+bool wireframe = false;
 // Light
 bool isLight[] = {true, true, true, true};
 
@@ -189,7 +193,7 @@ double dragV = 0, dragVInc = -0.005;
 int dragStat = 0;
 
 // Texture Variables
-bool showTexture = false;
+bool showTexture = true;
 GLuint shadowMapTexture;
 GLuint dragonTex;
 GLuint snowTex;
@@ -345,7 +349,7 @@ void reshape(int w, int h) {
     glViewport(0, 0, w, h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-
+    printf("Dirubah ukurannya ke %dx%d\n", w, h);
     gluPerspective(FOVY, aspect, ZNEAR, ZFAR);
     glGetFloatv(GL_MODELVIEW_MATRIX, cameraProjectionMatrix);
     glMatrixMode(GL_MODELVIEW);
@@ -1071,6 +1075,8 @@ void displaySnowObject(GLfloat initAngle, GLfloat initX, GLfloat initY, GLfloat 
 	glPopMatrix();
 }
 
+void DrawScene(bool);
+
 void drawPlane(void) {
      // menggambar lantai
     if (showTexture) {
@@ -1079,6 +1085,21 @@ void drawPlane(void) {
         glEnable(GL_TEXTURE_GEN_T); // Enable Texture Coord Generation For T ( NEW )
 		glBindTexture(GL_TEXTURE_2D, floorTex); //binding texture
     }
+
+    // Init untuk wireframe apabila dia wireframe mode
+    // Ini akan menjadi dasar kehidupan berbangsa dan bernegara
+    // apakah dia ingin menjadikan sebuah tampilan yang hanya
+    // garis-garis atau tampilan indah.
+    if (wireframe)
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    }
+    else
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+    
+
     glColor3f(0.0, 0.5, 0.8);
     glBegin(GL_POLYGON);
     glVertex3f(-18.5, -10.0, -30);
@@ -1158,48 +1179,42 @@ void drawPlane(void) {
 
 }
 
-void DrawScene(void) {
+void DrawScene(bool texture) {
     // Menggambar objek utama
 	glPushMatrix();
 	displayDragonObject(0.0, -8.0-dragV*5/2, 8.0+dragV, -2.0);
 	displayPineObject(0.0, 15.0, 1.5, -11.0);
 	displaySnowObject(0.0, 5, 5.5, -4.0);
 	glPopMatrix();
-
         
-	//Gambar kaktus yey
-	 
-    drawZudomonNoTexture();
-	
-	glEnable(GL_TEXTURE_2D);
+	//Gambar kaktus 1 yey
 	glPushMatrix();
-	glTranslatef(-10.f, -5.f, -10.f);
-	glScalef(2.f,2.f,2.f);
-	glCallList(kaktus_dp);
+	glTranslatef(-7.f, -10.f, -17.f);
+	glScalef(1.3f, 1.3f, 1.3f);
+	drawKaktus(texture);
+    glPopMatrix();
 
-	glLoadIdentity();
-	glTranslatef(10.f, -5.f, -10.f);
-	glScalef(2.f,2.f,2.f);
-	glCallList(kaktus_dp);
+    //Gambar kaktus 2 yey
+    glPushMatrix();
+	glTranslatef(8.f, -10.f, -17.f);
+	glScalef(1.3f,1.3f,1.3f);
+	drawKaktus(texture);
+    glPopMatrix();
 
-	glLoadIdentity();
-	glTranslatef(0.f, -5.f, -10.f);
-	glScalef(2.f,2.f,2.f);
-	glCallList(kaktus_dp);
-	glPopMatrix();
-	glPushMatrix();
-	glLoadIdentity();
-	//gambarNemo(0.f);
-	glPopMatrix();
-	
-	glPopMatrix();
-	// Zudomon!
-	glPushMatrix();
-	glLoadIdentity();
-	glTranslatef(5.f, 0.f, 0);
-	drawZudomon();
-	glPopMatrix();
-	
+    // Gambar kaktus 3 yey
+    glPushMatrix();
+	glTranslatef(0.f, -10.f, -17.f);
+	glScalef(1.3f,1.3f,1.3f);
+	drawKaktus(texture);
+    glPopMatrix();
+
+    // Gambar Nemo yey
+    glPushMatrix();
+	glTranslatef(0.f, -3.f, -17.f);
+	glScalef(1.3f,1.3f,1.3f);
+	drawNemo(dragV, texture);
+    glPopMatrix();
+
 }
 
 void showTextures() {
@@ -1250,7 +1265,7 @@ void display(void) {
     glPopMatrix();
 	
     glEnable(GL_LIGHTING);
-    DrawScene();
+    DrawScene(showTexture);
 	glDisable(GL_LIGHTING);
 	
 	glColor3f(0.0, 0.0, 0.0);
@@ -1273,8 +1288,9 @@ void display(void) {
 		if (isLight[ii]) {
 			for(int jj = 0; jj < 4; ++jj) {
 				glPushMatrix();
-				glShadowProjection(lamp[ii], vPoint[jj], vNormal[jj]); 
-				DrawScene();
+				glShadowProjection(lamp[ii], vPoint[jj], vNormal[jj]);
+                // Draw scene with no texture
+				DrawScene(false);
 				glPopMatrix();
 			}
 		}
@@ -1368,8 +1384,15 @@ void camMenu(int id) {
 // Fungsi pengaturan material
 void materialMenu(int id) 
 {
+    // Bagus mode
 	if(id == -1) {
 		showTexture = true;
+    }
+    // Wireframe mode
+    else if (id == 3) {
+        showTexture = true;
+        wireframe = true;
+    // Only material mode
 	} else {
 		currentMaterial = id + 1;
 		showTexture = false;
@@ -1491,8 +1514,9 @@ int main(int argc, char **argv) {
     glutInit(&argc, argv);
 
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-    glutInitWindowSize(1024, 600);
-    glutCreateWindow("WS2_Fajar Setyo Nugroho_1006671425_Muhammad Mufid Afif_1006671766");
+    // Solving unknown ATI Problem on Mufid's computer
+    glutInitWindowSize(1212, 708);
+    glutCreateWindow("TugasAkhir_Fajar Setyo Nugroho_1006671425_Muhammad Mufid Afif_1006671766");
 
 	init();
     glutReshapeFunc(reshape);
@@ -1527,6 +1551,7 @@ int main(int argc, char **argv) {
     glutAddMenuEntry("Standard", 0);
     glutAddMenuEntry("Greymon", 1);
     glutAddMenuEntry("Black Dragon", 2);
+    glutAddMenuEntry("Wireframe Mode", 3);
 	camInt = glutCreateMenu(camMenu);
     glutAddMenuEntry("Moving Camera", 0);
     glutAddMenuEntry("Dragon View", 1);

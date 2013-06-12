@@ -11,84 +11,113 @@
 // DisplayList dipergunakan untuk menggambar sayap yang cukup kompleks
 void initDisplayList()
 {
+    // ====================================================================
+    //                           K A K T U S
+    // ====================================================================
+
     GLMmodel* kaktus;
 
     kaktus = (GLMmodel*)malloc(sizeof(GLMmodel));
 	kaktus = glmReadOBJ("kaktus.obj");
 	
-	kaktus_dp=glGenLists(1);
-	glNewList(kaktus_dp,GL_COMPILE);
-        glmDraw(kaktus, GLM_SMOOTH );
-		//glmDraw(kaktus, GLM_SMOOTH);
+    // Kaktus textured, prepping
+    glEnable(GL_TEXTURE);
+    glEnable(GL_TEXTURE_2D);
+    // Kaktus textured
+	kaktus_dp = glGenLists(1);
+	glNewList(kaktus_dp, GL_COMPILE);
+        glmDraw(kaktus, GLM_SMOOTH | GLM_MATERIAL | GLM_COLOR);
 	glEndList();
+
+    glDisable(GL_TEXTURE);
+    glDisable(GL_TEXTURE_2D);
+
+    // Kaktus untextured
+	kaktus_dp_notexture = glGenLists(1);
+	glNewList(kaktus_dp_notexture, GL_COMPILE);
+        glmDraw(kaktus, GLM_SMOOTH);
+	glEndList();
+
+    // ====================================================================
+    //                       N E M O    U T A M A
+    // ====================================================================
 
     GLMmodel* nemobodi_model;
 
     nemobodi_model = (GLMmodel*)malloc(sizeof(GLMmodel));
 	nemobodi_model = glmReadOBJ("nemo-bodi.obj");
-	//glmUnitize(kubus);
-    glmFacetNormals(nemobodi_model);
-    glmLinearTexture(nemobodi_model);
-	glmVertexNormals(nemobodi_model, 90.0, GL_TRUE);
-	nemo_body_dp = glGenLists(1);
+
+    // Nemo textured, prepping
     glEnable(GL_TEXTURE);
     glEnable(GL_TEXTURE_2D);
-
-	glNewList(nemo_body_dp,GL_COMPILE);
-        glmDraw(nemobodi_model, GLM_SMOOTH );
+    // Nemo textured
+    nemo_body_dp = glGenLists(1);
+	glNewList(nemo_body_dp, GL_COMPILE);
+        glmDraw(nemobodi_model, GLM_SMOOTH | GLM_MATERIAL | GLM_TEXTURE);
 	glEndList();
-    
+
     glDisable(GL_TEXTURE);
     glDisable(GL_TEXTURE_2D);
 
-    // Sirip yea
+    // Nemo untextured
+    nemo_body_dp_notexture = glGenLists(1);
+    glNewList(nemo_body_dp_notexture, GL_COMPILE);
+        glmDraw(nemobodi_model, GLM_SMOOTH);
+    glEndList();
+
+    // ====================================================================
+    //                       N E M O    S I R I P
+    // ====================================================================
 
     nemobodi_model = (GLMmodel*)malloc(sizeof(GLMmodel));
 	nemobodi_model = glmReadOBJ("nemo-sirip.obj");
-    glmFacetNormals(nemobodi_model);
-    glmLinearTexture(nemobodi_model);
-	glmVertexNormals(nemobodi_model, 90.0, GL_TRUE);
-	nemo_sirip_dp = glGenLists(1);
+
+    // Nemo textured, prepping
     glEnable(GL_TEXTURE);
     glEnable(GL_TEXTURE_2D);
-
+    // Nemo textured
+    nemo_sirip_dp = glGenLists(1);
 	glNewList(nemo_sirip_dp, GL_COMPILE);
-        glmDraw(nemobodi_model, GLM_SMOOTH );
+        glmDraw(nemobodi_model, GLM_SMOOTH | GLM_MATERIAL | GLM_TEXTURE);
 	glEndList();
+
+    glDisable(GL_TEXTURE);
+    glDisable(GL_TEXTURE_2D);
+
+    // Nemo untextured
+    nemo_sirip_dp_notexture = glGenLists(1);
+    glNewList(nemo_sirip_dp_notexture, GL_COMPILE);
+        glmDraw(nemobodi_model, GLM_SMOOTH);
+    glEndList();
+
+    // ====================================================================
+    //                       N E M O    B U N T U T
+    // ====================================================================
 
     // Buntut  yea
     nemobodi_model = (GLMmodel*)malloc(sizeof(GLMmodel));
 	nemobodi_model = glmReadOBJ("nemo-belakang.obj");
-    glmFacetNormals(nemobodi_model);
-    glmLinearTexture(nemobodi_model);
-	glmVertexNormals(nemobodi_model, 90.0, GL_TRUE);
-	nemo_buntut = glGenLists(1);
+
     glEnable(GL_TEXTURE);
     glEnable(GL_TEXTURE_2D);
 
-	glNewList(nemo_buntut, GL_COMPILE);
-        glmDraw(nemobodi_model, GLM_SMOOTH );
+    // Nemo textured, prepping
+    glEnable(GL_TEXTURE);
+    glEnable(GL_TEXTURE_2D);
+    // Nemo textured
+    nemo_buntut_dp = glGenLists(1);
+	glNewList(nemo_buntut_dp, GL_COMPILE);
+        glmDraw(nemobodi_model, GLM_SMOOTH | GLM_MATERIAL | GLM_TEXTURE);
 	glEndList();
 
- //   kubus = (GLMmodel*)malloc(sizeof(GLMmodel));
-	//kubus = glmReadOBJ("nemo.obj");
-	////glmUnitize(kubus);
- //   glmFacetNormals(kubus);
- //   glmLinearTexture(kubus);
-	//glmVertexNormals(kubus, 90.0, GL_TRUE);
-	//kubus_dp=glGenLists(1);
- //   glEnable(GL_TEXTURE);
- //   glEnable(GL_TEXTURE_2D);
+    glDisable(GL_TEXTURE);
+    glDisable(GL_TEXTURE_2D);
 
-	//glNewList(kubus_dp,GL_COMPILE);
- //       glmDraw(kubus, GLM_SMOOTH | GLM_TEXTURE | GLM_MATERIAL);
-	//	//glmDraw(kaktus, GLM_SMOOTH);
-	//glEndList();
- //   
- //   glDisable(GL_TEXTURE);
- //   glDisable(GL_TEXTURE_2D);
-
-	return;
+    // Nemo untextured
+    nemo_buntut_dp_notexture = glGenLists(1);
+    glNewList(nemo_buntut_dp_notexture, GL_COMPILE);
+        glmDraw(nemobodi_model, GLM_SMOOTH);
+    glEndList();
 }
 
 void glShadowProjection(float * l, float * e, float * n) {

@@ -62,7 +62,7 @@ void drawNemo(float keyframe2, bool texture, bool notinteractive) {
     glPushMatrix();
     glCallList(texture ? nemo_body_dp : nemo_body_dp_notexture);
     glPopMatrix();
-
+    
     // Terus gambar sirip
     glPushMatrix();
     glTranslatef(3.7f, 1.f, 0);

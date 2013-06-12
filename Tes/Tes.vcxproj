@@ -68,7 +68,7 @@
       <Message>Copy data asset</Message>
     </CustomBuildStep>
     <PreBuildEvent>
-      <Command>del /f /s /q ..\Debug &amp;&amp; copy  /y *.mtl + *.obj ..\Debug</Command>
+      <Command>del /f /s /q ..\..\Debug &amp;&amp; copy  /y *.mtl + *.obj ..\..\Debug</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

@@ -146,6 +146,8 @@ bool isSpin = true; // Apakah model perlu berputar?
 bool wireframe = false;
 // Light
 bool isLight[] = {true, true, true, true};
+// Kamera jadul vs. Baru
+bool kamerajadul = true;
 
 GLfloat /* light 1: atas depan*/
 lamp1A[] = {0.5, 0.5, 0.5, 1.0},
@@ -172,7 +174,7 @@ horizonS[] = {0.6, 0.6, 0.6, 1.0},
 horizonP[] = {10.0, 3.0, 0.0, 1.0};
 
 // Camera
-bool isMoving = true, isDragon = true;
+bool isMoving = true, isDragon = true, isZudomon = true;
 
 // lamp positions
 float lamp4[] = {10.0, 3.0, 0.0};
@@ -1235,14 +1237,27 @@ void display(void) {
 
     glLoadIdentity();
 	glDisable(GL_LIGHTING);
-	
-	glTranslatef(Camera.Position.x, Camera.Position.y, Camera.Position.z);
-	glRotatef(Camera.RotatedX, 1.0, 0, 0);
-	glRotatef(Camera.RotatedY, 0.0, 1.0, 0);
-	glRotatef(Camera.RotatedZ, 0.0, 0, 1.0);
+
+	if (kamerajadul)
+    {
+	    glTranslatef(Camera.Position.x, Camera.Position.y, Camera.Position.z);
+	    glRotatef(Camera.RotatedX, 1.0, 0, 0);
+	    glRotatef(Camera.RotatedY, 0.0, 1.0, 0);
+	    glRotatef(Camera.RotatedZ, 0.0, 0, 1.0);
+    }
+    else
+    {
+        // Gunakan gluLookAt;
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        gluLookAt( 0, dragV * 3 + 5.f, 0.f,
+		           zudomonposx, zudomonposy, zudomonposz-10.f,
+		           0, 1, 0);
+    }
 	glPushMatrix();
     drawPlane();
     glPopMatrix();
+    
 
 	// Lampu horizontal
     glPushMatrix(); 
@@ -1355,6 +1370,7 @@ void animateMenu(int id) {
 
 // Fungsi menu pengaturan camera
 void camMenu(int id) {
+    kamerajadul = true;
 	if(id == 1 || id == 2) {
 		isMoving = false;
 		Camera.Reset();
@@ -1372,6 +1388,7 @@ void camMenu(int id) {
 			Camera.RotateZ(5.0);
 		} else {
 			isDragon = false;
+            kamerajadul = false;
 		}
 	} else {
 		isMoving = true;
@@ -1555,7 +1572,7 @@ int main(int argc, char **argv) {
 	camInt = glutCreateMenu(camMenu);
     glutAddMenuEntry("Moving Camera", 0);
     glutAddMenuEntry("Dragon View", 1);
-    glutAddMenuEntry("wut?", 2);
+    glutAddMenuEntry("Nemodomon", 2);
     glutAddMenuEntry("Reset View", 3);
     
 	
